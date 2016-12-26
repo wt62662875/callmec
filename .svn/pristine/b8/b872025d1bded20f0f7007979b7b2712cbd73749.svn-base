@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   type = "0"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "callmec/Classes/DriverMap/Home/Model/AppiontRouteModel.m"
+            timestampString = "498534999.923826"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "26"
+            endingLineNumber = "26"
+            landmarkName = "+fetchAppiontRouteWithPage:withKeyWords:withEnd:Success:failed:"
+            landmarkType = "5">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "+[AppiontRouteModel fetchAppiontRouteWithPage:withKeyWords:withEnd:Success:failed:]"
+                  moduleName = "callmec"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/wt/Desktop/callmec/callmec/Classes/DriverMap/Home/Model/AppiontRouteModel.m"
+                  timestampString = "498535082.882192"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "26"
+                  endingLineNumber = "26"
+                  offsetFromSymbolStart = "620">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__83+[AppiontRouteModel fetchAppiontRouteWithPage:withKeyWords:withEnd:Success:failed:]_block_invoke"
+                  moduleName = "callmec"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/wt/Desktop/callmec/callmec/Classes/DriverMap/Home/Model/AppiontRouteModel.m"
+                  timestampString = "498535082.884579"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "26"
+                  endingLineNumber = "26"
+                  offsetFromSymbolStart = "24">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "callmec/Classes/DriverMap/Home/Model/CMSearchManager.m"
+            timestampString = "498538555.318679"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "62"
+            endingLineNumber = "62"
+            landmarkName = "-searchLocation:completionBlock:"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "-[CMSearchManager searchLocation:completionBlock:]"
+                  moduleName = "callmec"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/wt/Desktop/callmec/callmec/Classes/DriverMap/Home/Model/CMSearchManager.m"
+                  timestampString = "498538555.332074"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "62"
+                  endingLineNumber = "62"
+                  offsetFromSymbolStart = "724">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__50-[CMSearchManager searchLocation:completionBlock:]_block_invoke"
+                  moduleName = "callmec"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/wt/Desktop/callmec/callmec/Classes/DriverMap/Home/Model/CMSearchManager.m"
+                  timestampString = "498538555.33225"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "62"
+                  endingLineNumber = "62"
+                  offsetFromSymbolStart = "24">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "callmec/Classes/DriverMap/Carpooling/Controller/CarPoolingHomeController.m"
+            timestampString = "498542400.849889"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "919"
+            endingLineNumber = "919"
+            landmarkName = "-initMoreData"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "callmec/Classes/DriverMap/Home/Controller/SearchAddressController.m"
+            timestampString = "498559990.934913"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "232"
+            endingLineNumber = "232"
+            landmarkName = "-searchTipsWithKey:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

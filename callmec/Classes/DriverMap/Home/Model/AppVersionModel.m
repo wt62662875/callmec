@@ -1,0 +1,20 @@
+//
+//  AppVersionModel.m
+//  callmed
+//
+//  Created by sam on 16/10/21.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "AppVersionModel.h"
+
+@implementation AppVersionModel
+
++ (void) checkAppVersionWithSucess:(QuerySuccessBlock)success withFail:(QueryErrorBlock)error
+{
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    [params setObject:@"3" forKey:@"type"];
+    [params setObject:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] forKey:@"version"];
+    [HttpShareEngine callWithFormParams:params withMethod:@"checkAppVersion" succ:success fail:error];
+}
+@end

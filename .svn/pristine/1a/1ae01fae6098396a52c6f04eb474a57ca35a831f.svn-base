@@ -1,0 +1,23 @@
+//
+//  AppiontmentController.h
+//  callmec
+//
+//  Created by sam on 16/7/21.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "BaseController.h"
+#import "CMLocation.h"
+#import "TripTypeModel.h"
+
+@interface AppiontmentController : BaseController
+@property (nonatomic,strong) CMLocation *startLocation;
+@property (nonatomic,strong) CMLocation *endLocation;
+@property (nonatomic,assign) BOOL isNowUseCar;
+@property (nonatomic,strong) TripTypeModel *tripTypeModel;
+@property (nonatomic,strong) CMLocation *location;
+@property (nonatomic,strong) CMLocation *offLocation;
+@property (nonatomic,strong) NSDictionary *allDatas;
+@property (nonatomic, copy) NSString *startTime;
+
+@end

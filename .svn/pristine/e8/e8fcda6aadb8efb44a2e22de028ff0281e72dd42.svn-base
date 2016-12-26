@@ -1,0 +1,18 @@
+//
+//  CarTypeView.h
+//  callmec
+//
+//  Created by sam on 16/7/6.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface TripTypeView : UIView
+
+@property (nonatomic,strong) NSArray *dataArray;
+@property (nonatomic,strong) UIColor *selectColor;
+@property (nonatomic,strong) NSString *selectImage;
+@property (nonatomic,assign) NSInteger indexSelect;
+@property (nonatomic,weak) id<TargetActionDelegate> delegate;
+@end

@@ -1,0 +1,297 @@
+//
+//  DriverOrderView.m
+//  callmec
+//
+//  Created by sam on 16/7/11.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "DriverNoticeView.h"
+
+#import <MAMapKit/MAMapKit.h>
+#import <AMapSearchKit/AMapSearchAPI.h>
+
+#import "MANaviRoute.h"
+#import "RateViewBar.h"
+@interface DriverNoticeView()
+
+@property (nonatomic,strong) UIImageView *iconView;
+@property (nonatomic,strong) RateViewBar *starLevel;
+@property (nonatomic,strong) UILabel *driverName;
+@property (nonatomic,strong) UILabel *distanceLabel;
+@property (nonatomic,strong) UILabel *leftTimeLabel;
+@property (nonatomic,strong) UILabel *moneyLabel;
+@property (nonatomic,strong) UILabel *driverTypeLabel;         //
+@property (nonatomic,strong) UIButton *buttonSubmit;
+@property (nonatomic,strong) UILabel *carLabel;
+@property (nonatomic,strong) UILabel *carNumber;
+@property (nonatomic,strong) UIButton *buttonCall;
+
+@end
+
+@implementation DriverNoticeView
+
+
+- (instancetype) initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self initView];
+    }
+    return self;
+}
+
+- (void) initView
+{
+    [self setBackgroundColor:RGBHexa(g_black, 0.5)];
+    _containerView =[[UIView alloc] init];
+    [_containerView setBackgroundColor:[UIColor whiteColor]];
+    [self addSubview:_containerView];
+    [_containerView mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self);
+        make.width.equalTo(self);
+        make.height.mas_equalTo(140);
+    }];
+    
+    _buttonSubmit = [[UIButton alloc] init];
+    [_buttonSubmit.titleLabel setFont:[UIFont systemFontOfSize:14]];
+    [_buttonSubmit setBackgroundImage:[ImageTools imageWithColor:RGBHex(g_blue)] forState:UIControlStateNormal];
+    [_buttonSubmit addTarget:self action:@selector(buttonTarget:) forControlEvents:UIControlEventTouchUpInside];
+    [_buttonSubmit.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [_buttonSubmit.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [_buttonSubmit.titleLabel setNumberOfLines:0];
+    
+    [_buttonSubmit setTitle:@"取消订单" forState:UIControlStateNormal];
+    _buttonSubmit.titleLabel.numberOfLines = 2;
+    
+    [_containerView addSubview:_buttonSubmit];
+    [_buttonSubmit mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(_containerView);
+        make.height.width.mas_equalTo(70);
+        make.top.equalTo(_containerView).offset(10);
+    }];
+    
+    
+    _iconView  =[[UIImageView alloc] init];
+    [_iconView setImage:[UIImage imageNamed:@"icon_driver"]];
+    [_containerView addSubview:_iconView];
+    [_iconView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(_buttonSubmit.mas_centerY);
+        make.left.equalTo(_containerView).offset(5);
+        make.width.height.mas_equalTo(60);
+    }];
+    
+    _driverTypeLabel = [[UILabel alloc] init];
+    [_driverTypeLabel setFont:[UIFont systemFontOfSize:12]];
+    [_driverTypeLabel setText:@"[自营]"];
+//    [_containerView addSubview:_driverTypeLabel];
+    
+    
+    _driverName = [[UILabel alloc] init];
+    [_driverName setFont:[UIFont systemFontOfSize:15]];
+    [_driverName setText:@""];
+    [_containerView addSubview:_driverName];
+    
+
+//    _goodComment
+    _starLevel = [[RateViewBar alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_containerView addSubview:_starLevel];
+    [_starLevel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_iconView.mas_right).offset(5);
+        make.centerY.equalTo(_buttonSubmit);
+        make.width.mas_equalTo(75);
+        make.height.mas_equalTo(15);
+    }];
+    
+    //司机类型
+    [_driverTypeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_iconView.mas_right).offset(5);
+        make.bottom.equalTo(_starLevel.mas_top).offset(-5);
+    }];
+    //司机姓名重新布局
+    [_driverName mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_driverTypeLabel.mas_right).offset(5);
+        make.bottom.equalTo(_starLevel.mas_top).offset(-5);
+    }];
+    
+    _distanceLabel = [[UILabel alloc] init];
+    [_distanceLabel setText:@"距离500米"];
+    [_distanceLabel setFont:[UIFont systemFontOfSize:11]];
+    [_containerView addSubview:_distanceLabel];
+    [_distanceLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_starLevel.mas_right).offset(2);
+        make.centerY.equalTo(_buttonSubmit.mas_centerY);
+    }];
+    
+    
+    _leftTimeLabel = [[UILabel alloc] init];
+    [_leftTimeLabel setText:@"1分钟到"];
+    [_leftTimeLabel setFont:[UIFont systemFontOfSize:11]];
+    [_containerView addSubview:_leftTimeLabel];
+    [_leftTimeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_distanceLabel.mas_right).offset(2);
+        make.centerY.equalTo(_buttonSubmit.mas_centerY);
+    }];
+    
+    
+    _moneyLabel = [[UILabel alloc] init];
+    [_moneyLabel setText:@""];
+    [_moneyLabel setFont:[UIFont systemFontOfSize:13]];
+    [_containerView addSubview:_moneyLabel];
+    [_moneyLabel setHidden:YES];
+    [_moneyLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_iconView.mas_right).offset(5);
+        make.top.equalTo(_starLevel.mas_bottom).offset(10);
+    }];
+    
+    
+    _carNumber = [[UILabel alloc] init];
+    [_carNumber setFont:[UIFont systemFontOfSize:13]];
+    [_carNumber setText:@""];
+    [_containerView addSubview:_carNumber];
+    
+    [_carNumber mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_iconView.mas_right).offset(5);
+        make.top.equalTo(_starLevel.mas_bottom).offset(5);
+    }];
+    
+    _carLabel = [[UILabel alloc] init];
+    [_carLabel setFont:[UIFont systemFontOfSize:13]];
+    [_carLabel setText:@""];
+    [_containerView addSubview:_carLabel];
+    
+    [_carLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_carNumber.mas_right).offset(5);
+        make.top.equalTo(_starLevel.mas_bottom).offset(5);
+    }];
+    
+    
+    
+    
+    
+    
+    _buttonCall = [[UIButton alloc] init];
+    [_buttonCall.titleLabel setFont:[UIFont systemFontOfSize:14]];
+    [_buttonCall setBackgroundImage:[ImageTools imageWithColor:[UIColor whiteColor]] forState:UIControlStateNormal];
+    [_buttonCall addTarget:self action:@selector(buttonTarget:) forControlEvents:UIControlEventTouchUpInside];
+    [_buttonCall.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [_buttonCall.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [_buttonCall.titleLabel setNumberOfLines:0];
+    [_buttonCall.layer setMasksToBounds:YES];
+    [_buttonCall.layer setCornerRadius:5];
+    [_buttonCall.layer setBorderWidth:1];
+    [_buttonCall.layer setBorderColor:RGBHex(g_red).CGColor];
+    
+    [_buttonCall setTitle:@"拨打电话" forState:UIControlStateNormal];
+    [_buttonCall setTitleColor:RGBHex(g_black) forState:UIControlStateNormal];
+    [_buttonCall setImage:[UIImage imageNamed:@"icon_phone_hd"] forState:UIControlStateNormal];
+    _buttonCall.titleLabel.numberOfLines = 2;
+    
+    [_containerView addSubview:_buttonCall];
+    [_buttonCall mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(_containerView).offset(-20);
+        make.left.equalTo(_containerView).offset(20);
+        make.top.equalTo(_buttonSubmit.mas_bottom).offset(10);
+        make.bottom.equalTo(_containerView).offset(-10);
+    }];
+}
+
+- (void) setModel:(CarOrderModel *)model
+{
+    _model = model;
+    [_buttonSubmit setTitle:[CommonUtility getOrderDescription:_model.state] forState:UIControlStateNormal];
+    if ([@"3" isEqualToString:_model.state])
+    {
+        [self updateUIView:model needDistance:YES];
+        [_buttonSubmit setTitle:@"取消订单" forState:UIControlStateNormal];
+    }else if([@"4" isEqualToString:_model.state]) //开始形成
+    {
+        [_driverName setText:_model.dRealName];
+        [_moneyLabel setHidden:YES];
+        [_buttonSubmit setTitle:@"开始行程" forState:UIControlStateNormal];
+        [_buttonSubmit setEnabled:NO];
+        [self updateUIView:model needDistance:YES];
+    }else if([@"5" isEqualToString:_model.state]) //结算
+    {
+        [_buttonSubmit setTitle:@"支付费用" forState:UIControlStateNormal];
+        [_buttonSubmit setEnabled:YES];
+        [self updateUIView:model needDistance:NO];
+    }else{
+        [_moneyLabel setText:@""];
+        [_moneyLabel setHidden:YES];
+        [self updateUIView:model needDistance:NO];
+    }
+    
+}
+
+- (void) updateUIView:(CarOrderModel *)model needDistance:(BOOL)needs
+{
+    [_driverName setText:_model.dRealName];
+    if (_model.actFee && [_model.actFee length]>0) {
+        [_moneyLabel setText:_model.actFee];
+        [_moneyLabel setHidden:NO];
+    }else{
+        [_moneyLabel setText:@""];
+        [_moneyLabel setHidden:YES];
+    }
+    
+    [_carNumber setText:model.carNo];
+    [_carLabel setText:model.carDesc];
+    
+    [_iconView sd_setCircleImageWithURL:[CommonUtility driverHeaderImageUrl:model.driverId] placeholderImage:[UIImage imageNamed:@"icon_driver"]];
+    if (needs) {
+        _startLocation = [[CMLocation alloc] init];
+        CLLocationDegrees latitude = [model.dLatitude floatValue];
+        CLLocationDegrees longitude = [model.dLongitude floatValue];
+        _startLocation.coordinate = CLLocationCoordinate2DMake(latitude,longitude);
+        [_driverTypeLabel setTextColor:RGBHex(g_blue)];
+        [_driverTypeLabel setText:[NSString stringWithFormat:@"[ %@ ]",[@"1" isEqualToString:_model.dType]?@"自营":@"挂靠"]];
+        [_moneyLabel setText:@""];
+        [_moneyLabel setHidden:YES];
+        [_starLevel setRateNumber:[model.dLevel floatValue]];
+        
+        _endLocation = [[CMLocation alloc] init];
+        _endLocation.coordinate =[GlobalData sharedInstance].location.coordinate;
+        [[CMSearchManager sharedInstance] searchForStartLocation:_startLocation end:_endLocation completionBlock:^(id request, id response, NSError *error) {
+            if(error)NSLog(@"NSError: %@",error);
+            AMapRouteSearchResponse *naviResponse = response;
+            if (naviResponse.route == nil)
+            {
+                return;
+            }
+            AMapPath * path = [naviResponse.route.paths firstObject];
+            [_distanceLabel setText:[NSString stringWithFormat:@"距离%.1fkm",path.distance / 1000.f]];
+            [_leftTimeLabel setText:[NSString stringWithFormat:@"%0.f分钟到",path.duration / 60.f]];
+        }];
+    }
+}
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+- (void)buttonTarget:(id)sender
+{
+    if (sender == _buttonCall) {
+        [CommonUtility callTelphone:_model.dPhoneNo];
+        return;
+    }
+    if(_handel)
+    {
+        @try {
+            self.handel(((UIButton*)sender).titleLabel.text);
+        }
+        @catch (NSException *exception) {
+            NSLog(@"exception:%@",exception);
+        }
+        @finally {
+            
+        }
+    }
+}
+
+@end

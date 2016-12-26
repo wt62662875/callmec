@@ -1,0 +1,359 @@
+//
+//  WaitingBusController.m
+//  callmec
+//
+//  Created by sam on 16/8/10.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "WaitingBusController.h"
+#import "PayOrderController.h"
+
+#import "LeftIconLabel.h"
+#import "LeftIconView.h"
+#import "RateViewBar.h"
+#import "RightTitleLabel.h"
+
+static BOOL WaitingBusController_HASVISIABLE = NO;
+
+@interface WaitingBusController ()
+@property (nonatomic,strong) UIView *container;
+@property (nonatomic,strong) UIView *tip_container;
+@property (nonatomic,strong) UILabel *tipLabel;
+@property (nonatomic,strong) UIImageView *iconImageView;
+@property (nonatomic,strong) RateViewBar *rateView;
+@property (nonatomic,strong) RightTitleLabel *displayName;
+@property (nonatomic,strong) RightTitleLabel *carNo;
+
+@property (nonatomic,strong) LeftIconLabel *timeLabel;
+@property (nonatomic,strong) LeftIconLabel *addressLabel;
+
+@property (nonatomic,strong) UIView *bottom_container;
+@property (nonatomic,strong) RightTitleLabel *moneyLabel;
+@property (nonatomic,strong) UIButton *buttonSubmit;
+
+@property (nonatomic,strong) dispatch_source_t task_timer;
+
+@end
+
+@implementation WaitingBusController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(noticeUpdateView:) name:NOTICE_ORDER_STATE_UPDATE object:nil];
+    [self initView];
+}
+
+- (void) initTask
+{
+    _task_timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,dispatch_get_main_queue());
+    dispatch_source_set_timer(_task_timer,
+                              DISPATCH_TIME_NOW,
+                              20.0*NSEC_PER_SEC,
+                              0.0);
+    
+    dispatch_source_set_event_handler(_task_timer, ^{
+        NSLog(@"timers: fetch Task");
+        [self fetchOrderStatus];
+    });
+    dispatch_resume(_task_timer);
+}
+
+- (void) cancelTask
+{
+    if (_task_timer) {
+        dispatch_source_cancel(_task_timer);
+        _task_timer = nil;
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [self initTask];
+}
+
+- (void) viewDidDisappear:(BOOL)animated
+{
+    [self cancelTask];
+    WaitingBusController_HASVISIABLE = NO;
+}
+- (void) initView
+{
+    [self setTitle:@"行程开始"];
+//    [self.leftButton setHidden:YES];
+    _container = [[UIView alloc] init];
+    [_container setBackgroundColor:[UIColor whiteColor]];
+    [self.view addSubview:_container];
+    [_container mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.headerView.mas_bottom);
+        make.left.equalTo(self.view);
+        make.right.equalTo(self.view);
+        make.height.mas_equalTo(200);
+    }];
+    
+    _tip_container = [[UIView alloc] init];
+    [_tipLabel setHidden:YES];
+    [_tip_container setBackgroundColor:[UIColor whiteColor]];
+    [self.view addSubview:_tip_container];
+    [_tip_container mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.headerView.mas_bottom);
+        make.left.equalTo(self.view);
+        make.right.equalTo(self.view);
+        make.height.mas_equalTo(100);
+    }];
+    
+    _tipLabel = [[UILabel alloc] init];
+    [_tipLabel setText:@"很抱歉，暂无司机应答！您可以联系客服帮您解决."];
+    [_tipLabel setTextAlignment:NSTextAlignmentCenter];
+    [_tipLabel setFont:[UIFont systemFontOfSize:15]];
+    [_tip_container addSubview:_tipLabel];
+    [_tipLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_tip_container).offset(10);
+        make.centerX.equalTo(_tip_container);
+        make.height.mas_equalTo(40);
+        make.width.mas_equalTo(250);
+    }];
+    UIView *grayLine = [[UIView alloc] init];
+    [_tip_container addSubview:grayLine ];
+    [grayLine setBackgroundColor:RGBHex(g_gray)];
+    [grayLine mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_tipLabel.mas_bottom).offset(10);
+        make.height.mas_equalTo(1);
+        make.left.equalTo(_tip_container).offset(10);
+        make.right.equalTo(_tip_container).offset(-10);
+    }];
+    
+    _iconImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon_userss"]];
+    [_container addSubview:_iconImageView];
+    [_iconImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_container).offset(10);
+        make.height.width.mas_equalTo(60);
+        make.centerX.equalTo(_container);
+    }];
+    
+    _rateView = [[RateViewBar alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_rateView setRateNumber:3];
+    [_container addSubview:_rateView];
+    [_rateView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_iconImageView.mas_bottom).offset(10);
+        make.centerX.equalTo(_container);
+        make.width.mas_equalTo(100);
+        make.height.mas_equalTo(20);
+    }];
+    
+    _displayName = [[RightTitleLabel alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_container addSubview:_displayName];
+    [_displayName setTitle:@"称  呼"];
+    [_displayName setTitleFont:[UIFont systemFontOfSize:13]];
+    [_displayName setContent:@""];
+    [_displayName mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_rateView.mas_bottom).offset(5);
+        make.left.equalTo(_container).offset(10);
+        make.right.equalTo(_container);
+        make.height.mas_equalTo(30);
+    }];
+    
+
+    _carNo = [[RightTitleLabel alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_container addSubview:_carNo];
+    [_carNo setTitle:@"车牌号"];
+    [_carNo setTitleFont:[UIFont systemFontOfSize:13]];
+    [_carNo setContent:@""];
+    [_carNo mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_displayName.mas_bottom).offset(5);
+        make.left.equalTo(_container).offset(10);
+        make.right.equalTo(_container);
+        make.height.mas_equalTo(30);
+    }];
+    
+    _timeLabel = [[LeftIconLabel alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_container addSubview:_timeLabel];
+    [_timeLabel setShowLine:YES];
+    [_timeLabel setTitle:[CommonUtility convertDateToString:[NSDate date]]];
+    [_timeLabel setTitleFont:[UIFont systemFontOfSize:15]];
+    [_timeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_carNo.mas_bottom).offset(5);
+        make.left.equalTo(_container).offset(10);
+        make.right.equalTo(_container);
+        make.height.mas_equalTo(45);
+    }];
+    
+    _addressLabel = [[LeftIconLabel alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_container addSubview:_addressLabel];
+    [_addressLabel setShowLine:YES];
+    [_addressLabel setImageUrl:@"icon_qidian_dot_4"];
+    [_addressLabel setTitle:@""];
+    [_addressLabel setTitleFont:[UIFont systemFontOfSize:15]];
+    [_addressLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_timeLabel.mas_bottom).offset(5);
+        make.left.equalTo(_container).offset(10);
+        make.right.equalTo(_container);
+        make.height.mas_equalTo(45);
+    }];
+    
+    if (_model) {
+        [_addressLabel setTitle:_model.slocation];
+        [_carNo setContent:_model.carNo];
+        [_displayName setContent:_model.dRealName];
+        [_rateView setRateNumber:[_model.dLevel integerValue]];
+        [_iconImageView sd_setCircleImageWithURL:[CommonUtility driverHeaderImageUrl:_model.driverId] placeholderImage:[UIImage imageNamed:@"icon_userss"]];
+    }
+    
+    
+    _bottom_container = [[UIView alloc] init];
+    [_bottom_container setBackgroundColor:[UIColor whiteColor]];
+    [self.view addSubview:_bottom_container];
+    [_bottom_container mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.view);
+        make.right.equalTo(self.view);
+        make.bottom.equalTo(self.view);
+        make.height.mas_greaterThanOrEqualTo(60);
+    }];
+    
+    
+    _moneyLabel =[[RightTitleLabel alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_moneyLabel setTitle:@"用车金额"];
+    [_moneyLabel setContent:@"40 元"];
+    [_moneyLabel setContentColor:[UIColor redColor]];
+    [_bottom_container addSubview:_moneyLabel];
+    [_moneyLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_bottom_container).offset(20);
+        make.centerY.equalTo(_bottom_container);
+        make.height.mas_equalTo(30);
+    }];
+    
+    _buttonSubmit = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_buttonSubmit setTitle:@"去支付" forState:UIControlStateNormal];
+    [_buttonSubmit setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_buttonSubmit setBackgroundImage:[ImageTools imageWithColor:RGBHex(g_red)] forState:UIControlStateNormal];
+    [_buttonSubmit addTarget:self action:@selector(buttonTarget:) forControlEvents:UIControlEventTouchUpInside];
+    [_bottom_container addSubview:_buttonSubmit];
+    [_buttonSubmit mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(_bottom_container);
+        make.height.equalTo(_bottom_container);
+        make.width.mas_equalTo(100);
+        make.top.equalTo(_bottom_container);
+    }];
+    [_bottom_container setHidden:YES];
+    if (_model) {
+        [self updateNoticeView:_model];
+    }
+}
+
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+- (void) noticeUpdateView:(NSNotification *)oderinfo
+{
+    DriverOrderInfo *order =nil;
+    @try {
+        order = [[DriverOrderInfo alloc] initWithDictionary:oderinfo.userInfo error:nil];
+        NSLog(@"oderinfo:%@",oderinfo.userInfo);
+        _model = [CarOrderModel convertDriverModel:order];
+    }
+    @catch (NSException *exception){}
+    @finally{}
+    [self updateNoticeView:_model];
+}
+
+- (void) updateNoticeView:(CarOrderModel*)order
+{
+    NSLog(@"order :%@",order);
+    [_bottom_container setHidden:YES];
+    [_moneyLabel setContent:[NSString stringWithFormat:@"%@元",order.actFee]];
+    if ([order.state integerValue]==6) {
+        [self setTitle:@"行程结束"];
+    }
+    if (order.slocation) {
+        [_addressLabel setTitle:order.slocation];
+    }
+    if ([@"10" isEqualToString:order.type]) {
+        [_addressLabel setTitle:order.slocation];
+        [_container setHidden:YES];
+        [_tip_container setHidden:NO];
+        [self setTitle:@"很抱歉，暂无司机应答！您可以联系客服帮您解决."];
+    }else if ([@"13" isEqualToString:order.type]) {
+        [_tip_container setHidden:YES];
+        [_displayName setContent:[NSString stringWithFormat:@"%@ %@",order.dRealName,[@"1" isEqualToString:order.dType]?@"呼我自营":@"挂靠"]];
+        [_carNo setContent:[NSString stringWithFormat:@"%@ %@",order.carNo,order.carDesc]];
+        [_rateView setRateNumber:[order.dLevel floatValue]];
+        [_iconImageView sd_setCircleImageWithURL:[CommonUtility driverHeaderImageUrl:order.driverId] placeholderImage:[UIImage imageNamed:@"icon_userss"]];
+        [_tip_container setHidden:YES];
+    }else if([@"6" isEqualToString:order.state]){
+        [_bottom_container setHidden:NO];
+        [_tip_container setHidden:YES];
+    }else if([@"5" isEqualToString:order.state]){
+        [_bottom_container setHidden:YES];
+        [_tip_container setHidden:YES];
+        [_displayName setContent:[NSString stringWithFormat:@"%@ %@",order.dRealName,[@"1" isEqualToString:order.dType]?@"呼我自营":@"挂靠"]];
+        [_carNo setContent:[NSString stringWithFormat:@"%@ %@",order.carNo,order.carDesc]];
+        [_rateView setRateNumber:[order.dLevel floatValue]];
+        [_iconImageView sd_setCircleImageWithURL:[CommonUtility driverHeaderImageUrl:order.driverId] placeholderImage:[UIImage imageNamed:@"icon_userss"]];
+    }
+}
+
+
+- (void) buttonTarget:(id)sender
+{
+    if (_buttonSubmit==sender) {
+        PayOrderController *order = [[PayOrderController alloc] init];
+        order.orderId = _model.ids;
+        [self.navigationController pushViewController:order animated:YES];
+    }else if(self.leftButton == sender){
+        
+        [self.navigationController  popToRootViewControllerAnimated:YES];
+//        [super buttonTarget:sender];
+    }
+    //_buttonSubmit
+}
+
++ (BOOL) hasVisiabled
+{
+    return WaitingBusController_HASVISIABLE;
+}
+
+- (void) dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void) callback:(id)sender
+{
+    
+}
+
+- (void) fetchOrderStatus
+{
+    [CarOrderModel fetchOrderList:1 Succes:^(NSArray *result, int pageCount, int recordCount) {
+        for (NSDictionary *doc in result) {
+            _model = [[CarOrderModel alloc] initWithDictionary:doc error:nil];
+            break;
+        }
+        if (_model) {
+            NSLog(@"query node:%@",_model);
+            [self updateNoticeView:_model];
+        }
+    } failed:^(NSInteger errorCode, NSString *errorMessage) {
+        NSLog(@"errorMessage");
+    }];
+    
+}
+@end

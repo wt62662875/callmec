@@ -1,0 +1,134 @@
+//
+//  PayCollectionView.m
+//  callmec
+//
+//  Created by sam on 16/7/18.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "PayCollectionView.h"
+#import "RightTitleLabel.h"
+#import "CellView.h"
+
+@interface PayCollectionView()
+
+@property (nonatomic,strong) UIView *container;
+@property (nonatomic,strong) RightTitleLabel *payLabel;           //支付金额
+@property (nonatomic,strong) CellView *wallet;
+@property (nonatomic,strong) CellView *alipay;
+@property (nonatomic,strong) CellView *weixinpay;
+@end
+
+@implementation PayCollectionView
+
+
+- (instancetype) initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self initView];
+    }
+    return self;
+}
+
+- (void) initView
+{
+    _container =[[UIView alloc] init];
+    [_container setBackgroundColor:[UIColor whiteColor]];
+    [self addSubview:_container];
+    [_container mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.bottom.equalTo(self);
+        make.left.equalTo(self);
+        make.width.equalTo(self);
+        make.height.mas_equalTo(200);
+    }];
+    
+    _payLabel = [[RightTitleLabel alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_payLabel setTitle:@"支付金额"];
+    [_payLabel setTitleFont:[UIFont systemFontOfSize:15]];
+    [_payLabel setContent:@""];
+    [_payLabel setHiddenLine:NO];
+    [_payLabel setContentColor:[UIColor redColor]];
+    [_container addSubview:_payLabel];
+    [_payLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_container);
+        make.left.equalTo(_container).offset(10);
+        make.right.equalTo(_container);
+        make.height.mas_equalTo(40);
+    }];
+    
+    _wallet = [[CellView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_wallet setTitle:@"余额支付"];
+    [_wallet setDesc:@"呼我币余额()"];
+    [_wallet setIconUrl:@"icon_pay_1"];
+    [_wallet setDelegate:_delegate];
+    [_wallet setIndex:0];
+//    [_container addSubview:_wallet];
+//    [_wallet mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.top.equalTo(_payLabel.mas_bottom);
+//        make.left.equalTo(_container);
+//        make.width.equalTo(_container);
+//        make.height.mas_equalTo(40);
+//    }];
+    
+    _alipay = [[CellView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_alipay setTitle:@"支付宝支付"];
+    [_alipay setDesc:@"使用支付宝客户端"];
+    [_alipay setIconUrl:@"icon_pay_2"];
+    [_alipay setDelegate:_delegate];
+    [_alipay setIndex:1];
+    [_container addSubview:_alipay];
+    [_alipay mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_payLabel.mas_bottom);//_wallet.mas_bottom
+        make.left.equalTo(_container);
+        make.width.equalTo(_container);
+        make.height.mas_equalTo(60);
+    }];
+    
+    _weixinpay = [[CellView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_weixinpay setTitle:@"微信支付"];
+    [_weixinpay setIconUrl:@"icon_pay_3"];
+    [_weixinpay setIndex:2];
+    [_weixinpay setDelegate:_delegate];
+    [_container addSubview:_weixinpay];
+    [_weixinpay mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_alipay.mas_bottom);
+        make.left.equalTo(_container);
+        make.width.equalTo(_container);
+        make.height.mas_equalTo(60);
+    }];
+}
+//UIView *allview = [[UIView alloc]  init];
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+- (void) touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    [super touchesBegan:touches withEvent:event];
+    UITouch *touch = [touches anyObject];
+    CGPoint point = [touch locationInView:_container];
+    if (point.y<0) {
+        NSLog(@"touchesBegan point:%@",NSStringFromCGPoint(point));
+        [self removeFromSuperview];
+    }
+}
+
+- (void) touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    [super touchesEnded:touches withEvent:event];
+}
+
+- (void) setDelegate:(id<TargetActionDelegate>)delegate
+{
+    _delegate = delegate;
+    
+    _wallet.delegate = _delegate;
+    _alipay.delegate = _delegate;
+    _weixinpay.delegate = _delegate;
+}
+@end

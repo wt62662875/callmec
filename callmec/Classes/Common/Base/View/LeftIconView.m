@@ -1,0 +1,173 @@
+//
+//  RightIconView.m
+//  callmec
+//
+//  Created by sam on 16/7/21.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "LeftIconView.h"
+
+@interface LeftIconView ()
+@property (nonatomic,strong) UIImageView *leftIcon;
+@property (nonatomic,strong) UILabel *titleLabel;
+@property (nonatomic,strong) UILabel *contentLabel;
+@property (nonatomic,strong) UIImageView *rightIcon;
+@property (nonatomic,strong) UIView *bottomLine;
+@property (nonatomic,strong) UIButton *buttonStatus;
+@end
+
+@implementation LeftIconView
+
+
+- (instancetype) initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self initView];
+    }
+    return self;
+}
+
+- (void) initView
+{
+    _leftIcon = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon_time"]];
+    [self addSubview:_leftIcon];
+    
+    [_leftIcon mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self).offset(10);
+        make.centerY.equalTo(self);
+        make.height.mas_equalTo(40);
+        make.width.equalTo(self.mas_height);
+    }];
+    
+    _titleLabel = [[UILabel alloc] init];
+    _titleLabel.textColor = [UIColor whiteColor];
+    [self addSubview:_titleLabel];
+    [_titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.bottom.equalTo(self.mas_centerY);
+        make.left.equalTo(_leftIcon.mas_right).offset(5);
+        make.height.equalTo(self).multipliedBy(0.4);
+        make.width.equalTo(self.mas_width).multipliedBy(0.6);
+    }];
+    
+    _contentLabel = [[UILabel alloc] init];
+    [_contentLabel setTextColor:RGBHex(g_white)];
+    [self addSubview:_contentLabel];
+    [_contentLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.mas_centerY);
+        make.left.equalTo(_leftIcon.mas_right).offset(5);
+        make.width.equalTo(self.mas_width).multipliedBy(0.6);
+        make.height.equalTo(self).multipliedBy(0.4);
+    }];
+    
+    _rightIcon = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon_arrpw"]];
+    [self addSubview:_rightIcon];
+    [_rightIcon mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(self);
+        make.right.equalTo(self).offset(-15);
+        make.width.height.equalTo(self.mas_height).multipliedBy(0.3);
+    }];
+    
+    _buttonStatus =[UIButton buttonWithType:UIButtonTypeCustom];
+    [_buttonStatus.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [_buttonStatus.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [_buttonStatus.titleLabel setNumberOfLines:0];
+    [_buttonStatus setBackgroundColor:RGBHex(g_blue)];
+    [self addSubview:_buttonStatus];
+    [_buttonStatus mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(self);
+        make.right.equalTo(self);
+        make.width.height.equalTo(self.mas_height);
+    }];
+}
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+- (void) setImageUrl:(NSString *)imageUrl
+{
+    _imageUrl = imageUrl;
+    if (_imageUrl && [_imageUrl hasPrefix:@"http://"]) {
+        [_leftIcon sd_setCircleImageWithURL:_imageUrl placeholderImage:[UIImage imageNamed:@"icon_driver"]];
+    }else{
+        [_leftIcon setImage:[UIImage imageNamed:_imageUrl]];
+    }
+    
+}
+
+
+- (void) setTitle:(NSString *)title
+{
+    _title = title;
+    if (_title) {
+        if (_titleFont) {
+            
+        }
+    }
+    [_titleLabel setText:_title];
+}
+
+- (void) setContent:(NSString *)content
+{
+    _content = content;
+    if (_content) {
+        
+    }
+    [_contentLabel setText:_content];
+}
+
+- (void) setIsIndicated:(BOOL)isIndicated
+{
+    _isIndicated = !isIndicated;
+    [_rightIcon setHidden:_isIndicated];
+}
+
+- (void) setButtonText:(NSString *)buttonText
+{
+    _buttonText = buttonText;
+    [_buttonStatus setTitle:_buttonText forState:UIControlStateNormal];
+    [_buttonStatus setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+}
+
+- (void) setFontNumber:(NSInteger)fontNumber
+{
+    _fontNumber = fontNumber;
+    [_buttonStatus.titleLabel setFont:[UIFont systemFontOfSize:fontNumber]];
+}
+
+- (void) setHeightLeftIcon:(CGFloat)heightLeftIcon
+{
+    _heightLeftIcon = heightLeftIcon;
+    [_leftIcon mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(self);
+        make.left.equalTo(self).offset(10);
+        make.width.height.mas_equalTo(_heightLeftIcon);
+    }];
+}
+
+- (void) setTitleFont:(UIFont *)titleFont
+{
+    _titleFont = titleFont;
+    
+    [_titleLabel setFont:_titleFont];
+}
+
+- (void) setContentFont:(UIFont *)contentFont
+{
+    _contentFont = contentFont;
+    [_contentLabel setFont:_contentFont];
+}
+
+- (void) setHiddenStatus:(BOOL)hiddenStatus
+{
+    _hiddenStatus = hiddenStatus;
+    [_buttonStatus setHidden:_hiddenStatus];
+}
+
+@end

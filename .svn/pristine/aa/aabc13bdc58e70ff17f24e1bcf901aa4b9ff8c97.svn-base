@@ -1,0 +1,275 @@
+//
+//  GoodsCarController.m
+//  callmec
+//
+//  Created by sam on 16/7/10.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "GoodsCarController.h"
+#import <AMapSearchKit/AMapSearchAPI.h>
+#import "SearchAddressController.h"
+#import "WaitDriverController.h"
+
+#import "CarsChoiceView.h"
+#import "TripAdressView.h"
+
+#import "CarModel.h"
+#import "MyTimePickerView.h"
+#import "MyTimeTool.h"
+
+#import "CMSearchManager.h"
+#import "CMDriverManager.h"
+
+@interface GoodsCarController()<TripViewDelegate,SearchViewControllerDelegate,TargetActionDelegate>
+
+@property (nonatomic,strong) UIButton *buttonCall;
+@property (nonatomic,strong) TripAdressView *tripView;
+@property (nonatomic,strong) CarsChoiceView *carsView;
+@property (nonatomic, copy) NSString *startTime;
+@property (nonatomic,strong) AMapPath *amap_path;
+@property (nonatomic,strong) TripMode *tmode;
+@property (nonatomic,strong) CarModel *cmodel;
+@property (nonatomic,strong) NSArray *carArray;
+@end
+
+@implementation GoodsCarController
+
+- (void) viewDidLoad
+{
+    [super viewDidLoad];
+    [self initView];
+}
+
+
+- (void) initView
+{
+    [self.view setBackgroundColor:RGBHex(g_gray)];
+    [self setTitle:@"现在带货"];
+    [self.headerView setBackgroundColor:[UIColor whiteColor]];
+    [self setRightButtonText:@"计价说明" withFont:[UIFont systemFontOfSize:14]];
+    [self.rightButton setTitleColor:RGBHex(g_red) forState:UIControlStateNormal];
+    
+    _tripView = [[TripAdressView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
+    [_tripView setBackgroundColor:[UIColor redColor]];
+    _tripView.delegate = self;
+    [_tripView setIsHiddenTime:_isNowUseCar];
+    [_tripView.layer setCornerRadius:5];
+    [_tripView.layer setMasksToBounds:YES];
+    [_tripView setBackgroundColor:[UIColor whiteColor]];
+    [_tripView setHeaderTitle:@"本人带物"];
+    [self.view addSubview:_tripView];
+    
+    [_tripView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.headerView.mas_bottom).offset(10);
+        make.left.equalTo(self.view).offset(5);
+        make.right.equalTo(self.view).offset(-5);
+        make.height.mas_equalTo(_isNowUseCar?150:200);
+    }];
+    if (_startLocation) {
+        _tripView.startLocation = _startLocation;
+    }
+    if (_endLocation) {
+        _tripView.endLocation = _endLocation;
+    }
+    /*
+    _carsView =[[CarsChoiceView alloc] init];
+    CarModel *model1 = [[CarModel alloc] initWithDictionary:@{@"carTitle":@"舒适性",
+                                                              @"carIcon":@"icon_cartype_1",
+                                                              @"carIconLight":@"icon_cartype_fcs1",
+                                                              @"carType":@"1",
+                                                              @"isSelected":@"1",
+                                                              @"carMoney":@"10.0"} error:nil];
+    CarModel *model2 = [[CarModel alloc] initWithDictionary:@{@"carTitle":@"7座商务型",
+                                                              @"carIcon":@"icon_cartype_2",
+                                                              @"carIconLight":@"icon_cartype_fcs2",
+                                                              @"isSelected":@"0",
+                                                              @"carType":@"2",
+                                                              @"carMoney":@"10.0"} error:nil];
+    CarModel *model3 = [[CarModel alloc] initWithDictionary:@{@"carTitle":@"豪华型",
+                                                              @"carIcon":@"icon_cartype_3",
+                                                              @"carIconLight":@"icon_cartype_fcs3",
+                                                              @"isSelected":@"0",
+                                                              @"carType":@"3",
+                                                              @"carMoney":@"10.0"} error:nil];
+    _cmodel = model1;
+    _carArray =[NSArray arrayWithObjects:model1,model2,model3, nil];
+    [_carsView setDataArray:_carArray];
+    [self.view addSubview:_carsView];
+    [_carsView.layer setCornerRadius:5];
+    [_carsView.layer setMasksToBounds:YES];
+    [_carsView setDelegate:self];
+    
+    [_carsView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.tripView.mas_bottom).offset(10);
+        make.left.equalTo(self.view).offset(5);
+        make.right.equalTo(self.view).offset(-5);
+        make.height.mas_equalTo(120);
+    }];
+    */
+    _buttonCall = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_buttonCall.layer setCornerRadius:5];
+    [_buttonCall.layer setMasksToBounds:YES];
+    [_buttonCall setBackgroundImage:[ImageTools imageWithColor:RGBHex(g_red)] forState:UIControlStateNormal];
+    [_buttonCall setBackgroundImage:[ImageTools imageWithColor:RGBHex(g_header_c)] forState:UIControlStateHighlighted];
+    
+    //    [_buttonCall setImage:[ImageTools imageWithColor:RGBHex(g_gray)] forState:UIControlStateNormal];
+    
+    [_buttonCall setTitle:@"呼叫带物" forState:UIControlStateNormal];
+    [_buttonCall.titleLabel setFont:[UIFont systemFontOfSize:15]];
+    [_buttonCall addTarget:self action:@selector(buttonTargetSubmit:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_buttonCall];
+    [_buttonCall mas_updateConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(self.view);
+        make.left.equalTo(self.view).offset(10);
+        make.right.equalTo(self.view).offset(-10);
+        make.bottom.equalTo(self.view).offset(-10);
+        make.height.mas_equalTo(40);
+    }];
+}
+
+#pragma mark - - (void) tripViewClick:(UIView*)item;
+
+- (void) tripViewClick:(UIView *)item
+{
+    //    NSLog(@"trapId:%d",item.tag);
+    switch (item.tag)
+    {
+        case 0:
+            
+            break;
+        case 1:
+        {
+            [MyTimePickerView showTimePickerViewDeadLine:@"20160601" withTitle:@"请选择发货时间" CompleteBlock:^(NSDictionary *infoDic) {
+                
+                _startTime = infoDic[@"time_value"];
+                NSString *time_fromat = [MyTimeTool formatDateTime:_startTime withFormat:nil];
+                [_tripView setTime:time_fromat];
+                NSLog(@"infoDic:%@",infoDic);
+            }];
+        }
+            break;
+        case 2:
+            break;
+        case 3:
+        {
+            SearchAddressController *search = [[SearchAddressController alloc] init];
+            search.delegate = self;
+            search.city = self.tripView.startLocation.city;
+            [self.navigationController pushViewController:search animated:YES];
+        }
+            
+            break;
+        default:
+            break;
+    }
+}
+
+- (void) buttonTarget:(UIView*)sender
+{
+    if (sender==self.leftButton) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }else{
+        NSInteger tag = sender.tag;
+        _cmodel =_carArray[tag];
+    }
+}
+
+- (void) searchViewController:(SearchAddressController *)searchViewController didSelectLocation:(CMLocation *)location
+{
+    self.endLocation = location;
+    _tripView.endLocation = location;
+    //[self requestPathInfo];
+    [[CMSearchManager sharedInstance] searchForStartLocation:_startLocation end:_endLocation completionBlock:^(id request, id response, NSError *error) {
+        AMapRouteSearchResponse *naviResponse = response;
+        
+        if (naviResponse.route == nil)
+        {
+            [MBProgressHUD showAndHideWithMessage:@"获取路径失败" forHUD:nil];
+            return;
+        }
+        
+        AMapPath * path = [naviResponse.route.paths firstObject];
+        _amap_path = path;
+        _tmode = [[TripMode alloc] init];
+        _tmode.distance = [NSString stringWithFormat:@"%.1f",path.distance / 1000.f];
+        _tmode.time = [NSString stringWithFormat:@"%.1f",path.duration / 60.f];
+        _tmode.fee = [NSString stringWithFormat:@"%.2f",naviResponse.route.taxiCost];
+        /*
+        [_carsView setAboutMoney:[NSString stringWithFormat:@"费用约%.2f元  共%.1f km  约%.1f分钟", naviResponse.route.taxiCost, path.distance / 1000.f, path.duration / 60.f, nil]];
+         */
+    }];
+}
+
+
+- (void) buttonTargetSubmit:(id)sender
+{
+    if (!_startTime && !_isNowUseCar) {
+        [MBProgressHUD showAndHideWithMessage:@"请选择出发时间" forHUD:nil];
+        return;
+    }
+    if (!_endLocation) {
+        [MBProgressHUD showAndHideWithMessage:@"请选择目的地" forHUD:nil];
+        return;
+    }
+    
+    
+    
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    
+    NSString *userId = [GlobalData sharedInstance].user.userInfo.ids;
+    [params setObject:userId?userId:@"" forKey:@"memberId"];
+    
+    NSMutableDictionary *order = [NSMutableDictionary dictionary];
+    
+    
+    [order setObject:_carTypeModel.tripType forKey:@"type"];
+    [order setObject:self.isNowUseCar?@"false":@"false" forKey:@"appoint"];
+    if (_startTime) {
+        [order setObject:[MyTimeTool formatDateTime:_startTime withFormat:@"yyyy-MM-dd HH:mm:00"] forKey:@"appointDate"];//appointDate
+    }else{
+        
+    }
+    
+    if (!_startLocation) {
+        [MBProgressHUD showAndHideWithMessage:@"出发点没有获取到，请稍后!" forHUD:nil];
+        return;
+    }
+    [order setObject:_startLocation.address?_startLocation.address:@"" forKey:@"sLocation"];
+    [order setObject:_endLocation.address?_endLocation.address:@"" forKey:@"eLocation"];
+    [order setObject:[NSString stringWithFormat:@"%f",_startLocation.coordinate.longitude] forKey:@"sLongitude"];
+    [order setObject:[NSString stringWithFormat:@"%f",_startLocation.coordinate.latitude] forKey:@"sLatitude"];
+    [order setObject:[NSString stringWithFormat:@"%f",_endLocation.coordinate.longitude] forKey:@"eLongitude"];
+    [order setObject:[NSString stringWithFormat:@"%f",_endLocation.coordinate.latitude] forKey:@"eLatitude"];
+    [order setObject:_tmode.fee?_tmode.fee:@"" forKey:@"fee"];
+    [order setObject:_tmode.distance?_tmode.distance:@"" forKey:@"distance"];
+    
+    [order setObject:_cmodel.carType forKey:@"carType"];
+    [order setObject:@"false" forKey:@"other"];
+    [order setObject:@"" forKey:@"otherPhone"];
+    [order setObject:@"" forKey:@"otherName"];
+    
+    [params setObject:[order lk_JSONString] forKey:@"order"];
+    [CMDriverManager sendCallCarRequest:params success:^(NSDictionary *resultDictionary) {
+        NSLog(@"resultDictionary:%@",resultDictionary);
+        
+        NSString *orderId = [resultDictionary objectForKey:@"message"];
+        [MBProgressHUD showAndHideWithMessage:@"已经为您通知附近的司机！请稍后!" forHUD:nil];
+        WaitDriverController *waiter =[[WaitDriverController alloc] init];
+        waiter.orderId = orderId;
+        waiter.currentLocation = self.startLocation;
+        waiter.destinationLocation = self.endLocation;
+        if (_startTime) {
+            NSString *time_fromat = [MyTimeTool formatDateTime:_startTime withFormat:nil];
+            waiter.startTime = time_fromat;
+        }
+        waiter.routPath = self.amap_path;
+        [self.navigationController pushViewController:waiter animated:YES];
+        
+    } failed:^(NSInteger errorCode, NSString *errorMessage) {
+        [MBProgressHUD showAndHideWithMessage:errorMessage forHUD:nil];
+    }];
+    
+}
+
+@end

@@ -1,0 +1,141 @@
+//
+//  RightIconView.m
+//  callmec
+//
+//  Created by sam on 16/7/21.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "LeftInputView.h"
+
+@interface LeftInputView ()
+@property (nonatomic,strong) UIImageView *leftIcon;
+@property (nonatomic,strong) UITextField *contentLabel;
+@property (nonatomic,strong) UIImageView *rightIcon;
+@property (nonatomic,strong) UIView *bottomLine;
+@property (nonatomic,strong) UITapGestureRecognizer *g1;
+
+
+@end
+
+@implementation LeftInputView
+
+
+- (instancetype) initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self initView];
+    }
+    return self;
+}
+
+- (void) initView
+{
+    _leftIcon = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon_time"]];
+    [self addSubview:_leftIcon];
+    
+    [_leftIcon mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(self);
+        make.left.equalTo(self).offset(10);
+        make.width.height.equalTo(self.mas_height).multipliedBy(0.4);
+    }];
+    
+    _contentLabel = [[UITextField alloc] init];
+    [_contentLabel addTarget:self  action:@selector(valueChanged:)  forControlEvents:UIControlEventAllEditingEvents];
+    [_contentLabel setTextColor:RGBHex(g_black)];
+    _g1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(buttonTarget:)];
+    _g1.numberOfTapsRequired= 1;
+    _g1.numberOfTouchesRequired = 1;
+    [self addGestureRecognizer:_g1];
+    [self addSubview:_contentLabel];
+    [_contentLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(self);
+        make.left.equalTo(_leftIcon.mas_right).offset(10);
+        make.height.equalTo(self.mas_height).multipliedBy(0.7);
+        make.width.equalTo(self.mas_width).multipliedBy(0.7);
+    }];
+    
+    _rightIcon = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"icon_arrpw"]];
+    [self addSubview:_rightIcon];
+    [_rightIcon mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(self);
+        make.right.equalTo(self).offset(-15);
+        make.width.height.equalTo(self.mas_height).multipliedBy(0.3);
+    }];
+}
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+- (void) setImageUrl:(NSString *)imageUrl
+{
+    _imageUrl = imageUrl;
+    
+    UIImage *image = [UIImage imageNamed:_imageUrl];
+    if (image) {
+        [_leftIcon setImage:image];
+        [_leftIcon mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.centerY.equalTo(self);
+            make.left.equalTo(self).offset(10);
+        }];
+    }
+    
+}
+
+- (void) setPlaceHolder:(NSString *)placeHolder
+{
+    _placeHolder = placeHolder;
+    [_contentLabel setPlaceholder:_placeHolder];
+}
+
+- (void) setTitle:(NSString *)title
+{
+    _title = title;
+    if (_title) {
+        if (_titleFont) {
+            
+        }
+    }
+    [_contentLabel setText:_title];
+}
+
+- (void) setEnable:(BOOL)enable
+{
+    [_contentLabel setEnabled:enable];
+}
+
+-(void)setTouch:(BOOL)touch{
+    if (touch) {
+        [self removeGestureRecognizer:_g1];
+        [_rightIcon removeFromSuperview];
+    }
+}
+
+- (void) buttonTarget:(UITapGestureRecognizer*)sender
+{
+    if (_delegate && [_delegate respondsToSelector:@selector(buttonTarget:)])
+    {
+        [_delegate buttonTarget:sender.view];
+    }
+}
+
+- (void)valueChanged:(UITextField*)text
+{
+    _title = text.text;
+    if (_delegate && [_delegate respondsToSelector:@selector(valueChanged:)]) {
+        [_delegate valueChanged:self];
+    }
+}
+
+- (void) setTitleFont:(UIFont *)titleFont
+{
+    _titleFont = titleFont;
+    [_contentLabel setFont:_titleFont];
+}
+@end

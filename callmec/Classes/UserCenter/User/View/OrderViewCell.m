@@ -1,0 +1,222 @@
+//
+//  OrderViewCell.m
+//  callmec
+//
+//  Created by sam on 16/7/7.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "OrderViewCell.h"
+#import "OrderModel.h"
+#import "LeftIconLabel.h"
+
+@interface OrderViewCell()
+
+@property (nonatomic,strong) UIImageView *iconView;
+@property (nonatomic,strong) UILabel *timeLabel;
+@property (nonatomic,strong) UIView *grayLine;
+@property (nonatomic,strong) UIView *upLine;
+@property (nonatomic,strong) UIView *container;
+@property (nonatomic,strong) UILabel *moneyLabel;
+@property (nonatomic,strong) LeftIconLabel *buttonStart;
+@property (nonatomic,strong) LeftIconLabel *buttonEnd;
+@property (nonatomic,strong) UIButton *buttonSubmit;
+
+@end
+
+@implementation OrderViewCell
+
+
+- (instancetype) initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        [self initView];
+    }
+    return self;
+}
+
+- (void) initView
+{
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+    self.backgroundColor = RGBHex(g_gray);
+    _iconView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"lanyuan"]];
+    [self addSubview:_iconView];
+    [_iconView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self).offset(10);
+        make.top.equalTo(self).offset(10);
+        make.width.height.mas_equalTo(15);
+    }];
+    
+    _upLine = [[UIView alloc] init];
+    _upLine.backgroundColor =RGB(114, 114, 114);
+    [self addSubview:_upLine];
+    [_upLine mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.width.mas_equalTo(1);
+        make.top.equalTo(self);
+        make.centerX.equalTo(_iconView);
+        make.bottom.equalTo(_iconView.mas_top);
+    }];
+    
+    _grayLine= [[UIView alloc] init];
+    _grayLine.backgroundColor =RGB(114, 114, 114);
+    
+    [self addSubview:_grayLine];
+    [_grayLine mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.width.mas_equalTo(1);
+        make.top.equalTo(_iconView.mas_bottom);
+        make.centerX.equalTo(_iconView);
+        make.bottom.equalTo(self);
+    }];
+    _timeLabel = [[UILabel alloc] init];
+    [self addSubview:_timeLabel];
+    
+    [_timeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self).offset(5);
+        make.left.equalTo(_iconView.mas_right).offset(10);
+        make.width.equalTo(self).dividedBy(2);
+        make.height.equalTo(_iconView);
+    }];
+    [_timeLabel setText:@"06月03日 23:00"];
+    [_timeLabel setFont:[UIFont systemFontOfSize:15]];
+    _container = [[UIView alloc] init];
+    _container.backgroundColor= [UIColor whiteColor];
+    _container.layer.masksToBounds= YES;
+    _container.layer.cornerRadius = 5.0;
+    
+    [self addSubview:_container];
+    [_container mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_timeLabel.mas_bottom).offset(5);
+        make.left.equalTo(_iconView.mas_right).offset(0);
+        make.right.equalTo(self).offset(-5);
+        make.bottom.equalTo(self).offset(0);
+    }];
+    
+    _buttonSubmit = [UIButton buttonWithType:UIButtonTypeCustom];
+    _buttonSubmit.layer.cornerRadius = 5.0;
+    _buttonSubmit.layer.masksToBounds = YES;
+    [_buttonSubmit setTitle:@"评价司机" forState:UIControlStateNormal];
+    [_buttonSubmit.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [_buttonSubmit.titleLabel setNumberOfLines:1];
+    [_buttonSubmit.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [_buttonSubmit setBackgroundColor:RGBHex(g_blue)];
+//    [_buttonSubmit setTitleEdgeInsets:UIEdgeInsetsMake(0, 8, 0, 8)];
+    [_buttonSubmit setBackgroundImage:[ImageTools imageWithColor:RGBHex(g_blue)] forState:UIControlStateNormal];
+    [_buttonSubmit addTarget:self action:@selector(buttonTaget:) forControlEvents:UIControlEventTouchUpInside];
+    [_buttonSubmit.titleLabel setFont:[UIFont systemFontOfSize:13]];
+    [_container addSubview:_buttonSubmit];
+    
+    [_buttonSubmit mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(_container).offset(-10);
+        make.centerY.equalTo(_container);
+        make.width.height.mas_equalTo(93);
+        make.height.height.mas_equalTo(40);
+
+    }];
+    
+    _moneyLabel =[[UILabel alloc] init];
+    [_container addSubview:_moneyLabel];
+    [_moneyLabel setText:@"￥15"];
+    [_moneyLabel setTextAlignment:NSTextAlignmentCenter];
+    [_moneyLabel setTextColor:RGBHex(g_blue)];
+    [_moneyLabel setFont:[UIFont systemFontOfSize:12]];
+    [_moneyLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_container).offset(5);
+        make.centerY.equalTo(_container);
+        make.height.mas_equalTo(30);
+        make.width.mas_greaterThanOrEqualTo(5);
+        make.width.mas_lessThanOrEqualTo(60);
+    }];
+    
+    _buttonStart =[[LeftIconLabel alloc]  initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_buttonStart setTitle:@"起始地点"];
+    [_buttonStart setTitleFont:[UIFont systemFontOfSize:12]];
+    [_buttonStart setImageUrl:@"lvyuan"];
+    [_container addSubview:_buttonStart];
+
+    [_buttonStart mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_moneyLabel.mas_right).offset(5);
+        make.bottom.equalTo(_container.mas_centerY).offset(-5);
+        make.height.mas_greaterThanOrEqualTo(20);
+        make.right.equalTo(_buttonSubmit.mas_left).offset(-5);
+    }];
+    
+    _buttonEnd =[[LeftIconLabel alloc]  initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_buttonEnd setTitle:@"终点地点"];
+    [_buttonEnd setTitleFont:[UIFont systemFontOfSize:12]];
+    [_buttonEnd setImageUrl:@"hongyuan"];
+    [_container addSubview:_buttonEnd];
+    
+    [_buttonEnd mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_moneyLabel.mas_right).offset(5);
+        make.top.equalTo(_container.mas_centerY).offset(5);
+        make.height.mas_greaterThanOrEqualTo(20);
+        make.right.equalTo(_buttonSubmit.mas_left).offset(-5);
+    }];
+    
+    
+}
+- (void) setTopLineHidden:(BOOL)state
+{
+    [_upLine setHidden:state];
+}
+
+- (void) setBottomLineHidden:(BOOL)state
+{
+    [_grayLine setHidden:state];
+}
+
+- (void) setModel:(BaseModel*)model
+{
+    _model = model;
+    
+    OrderModel *order = ((OrderModel*)_model);
+    [_buttonStart setTitle:((OrderModel*)_model).slocation];
+    [_buttonEnd setTitle:((OrderModel*)_model).elocation];
+    NSString *fee;
+    if ([STATE_ORDER_FINISHED isEqualToString:order.state]) {
+        fee = ((OrderModel*)_model).actFee;
+    }else{
+        fee = ((OrderModel*)_model).fee;
+    }
+    NSString *moneystr = [NSString stringWithFormat:@"￥%@",fee];
+    CGSize size = [moneystr sizeFont:12];
+    [_moneyLabel setText:moneystr];
+    [_moneyLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(_container).offset(5);
+        make.centerY.equalTo(_container);
+        make.height.mas_equalTo(30);
+        make.width.mas_equalTo(size.width+5);
+    }];
+    [_timeLabel setText:[NSString stringWithFormat:@"%@",((OrderModel*)_model).createDate]];
+    if ([@"3" isEqualToString:order.type]) {
+        [self updateButtonStatus:[self convert:[CommonUtility getGoodsOrderDesc:order.state]]];
+    }else{
+        [self updateButtonStatus:[self convert:[CommonUtility getOrderDescription:order.state]]];
+    }
+}
+
+- (NSString*)convert:(NSString*)str
+{
+    if (str && [str length]>6) {
+        
+        return [NSString stringWithFormat:@"%@\n%@",[str substringToIndex:2],[str substringFromIndex:2]];
+        
+    }
+    return str;
+}
+
+- (void) updateButtonStatus:(NSString*)title
+{
+    [_buttonSubmit setTitle:title forState:UIControlStateNormal];
+}
+
+- (void) buttonTaget:(UIButton*)button
+{
+    if (_delegateCell &&[_delegateCell respondsToSelector:@selector(cellTarget:)])
+    {
+        [_delegateCell cellTarget:_model];
+    }
+}
+
+@end

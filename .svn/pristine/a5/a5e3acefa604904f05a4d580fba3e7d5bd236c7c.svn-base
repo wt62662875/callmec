@@ -1,0 +1,215 @@
+//
+//  FastBusOrderCell.m
+//  callmec
+//
+//  Created by sam on 16/9/9.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "FastBusOrderCell.h"
+#import "LeftIconView.h"
+#import "CMSearchManager.h"
+@interface FastBusOrderCell()
+
+@property (nonatomic,strong) UIImageView *iconView;
+@property (nonatomic,strong) UILabel *driverName;
+@property (nonatomic,strong) UILabel *driverTypeLabel;         //
+@property (nonatomic,strong) UIButton *buttonSubmit;
+@property (nonatomic,strong) UILabel *carLabel;
+@property (nonatomic,strong) UILabel *carNumber;
+
+@property (nonatomic,strong) CMLocation *startLocation;
+@property (nonatomic,strong) CMLocation *endLocation;
+
+@property (nonatomic,strong) UIButton *buttonMsg;
+@property (nonatomic,strong) UIButton *buttonCall;
+
+@property (nonatomic,strong) UILabel *titleLabel;
+@end
+
+@implementation FastBusOrderCell
+- (void) initView
+{
+    self.hasBottomLine = NO;
+        _iconView  =[[UIImageView alloc] init];
+        [_iconView setImage:[UIImage imageNamed:@"icon_driver"]];
+        [self addSubview:_iconView];
+        [_iconView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.equalTo(self).offset(10);
+            make.top.equalTo(self).offset(10);
+            make.height.mas_equalTo(50);
+            make.width.equalTo(_iconView.mas_height);
+        }];
+    
+//        _driverTypeLabel = [[UILabel alloc] init];
+//        [_driverTypeLabel setFont:[UIFont systemFontOfSize:12]];
+//        [_driverTypeLabel setText:@"[自营]"];
+//        [_driverTypeLabel setTextColor:[UIColor redColor]];
+//        [self addSubview:_driverTypeLabel];
+        //司机类型
+//        [_driverTypeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+//            make.left.equalTo(_iconView.mas_right).offset(5);
+//            make.height.mas_equalTo(20);
+//            make.width.mas_equalTo(40);
+//            make.bottom.equalTo(_iconView.mas_centerY);
+//        }];
+    
+        _driverName = [[UILabel alloc] init];
+        [_driverName setFont:[UIFont systemFontOfSize:13]];
+        [_driverName setText:@"白蛇"];
+        [self addSubview:_driverName];
+        //司机姓名重新布局
+        [_driverName mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.equalTo(_driverTypeLabel.mas_right).offset(5);
+            make.bottom.equalTo(_iconView.mas_centerY);
+            make.height.mas_equalTo(20);
+        }];
+    
+    
+        _carNumber = [[UILabel alloc] init];
+        [_carNumber setFont:[UIFont systemFontOfSize:13]];
+        [_carNumber setText:@"粤A88989"];
+        [self addSubview:_carNumber];
+        [_carNumber mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.equalTo(_iconView.mas_right).offset(5);
+            make.top.equalTo(_iconView.mas_centerY);
+            make.height.mas_equalTo(30);
+            make.width.mas_equalTo(80);
+        }];
+    
+        _carLabel = [[UILabel alloc] init];
+        [_carLabel setFont:[UIFont systemFontOfSize:13]];
+        [_carLabel setText:@"白色丰田"];
+        [self addSubview:_carLabel];
+    
+        [_carLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.equalTo(_carNumber.mas_right).offset(5);
+            make.top.equalTo(_iconView.mas_centerY);
+            make.height.mas_equalTo(30);
+        }];
+    
+    _buttonSubmit = [[UIButton alloc] init];
+    [_buttonSubmit.layer setBorderWidth:1];
+    [_buttonSubmit.layer setCornerRadius:5];
+    [_buttonSubmit.layer setMasksToBounds:YES];
+    [_buttonSubmit.layer setBorderColor:[UIColor redColor].CGColor];
+    [_buttonSubmit.titleLabel setFont:[UIFont systemFontOfSize:14]];//[ImageTools imageWithColor:RGBHex(g_red)]
+    [_buttonSubmit setBackgroundImage:[ImageTools imageWithColor:[UIColor whiteColor]] forState:UIControlStateNormal];
+    [_buttonSubmit addTarget:self action:@selector(buttonTarget:) forControlEvents:UIControlEventTouchUpInside];
+    [_buttonSubmit.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    [_buttonSubmit.titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+    [_buttonSubmit.titleLabel setNumberOfLines:0];
+    [_buttonSubmit setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [_buttonSubmit setTitle:@"取消\n订单" forState:UIControlStateNormal];
+    _buttonSubmit.titleLabel.numberOfLines = 2;
+    
+    [self addSubview:_buttonSubmit];
+    [_buttonSubmit mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self).offset(-10);
+        make.height.mas_equalTo(50);
+        make.width.equalTo(_buttonSubmit.mas_height);
+        make.centerY.equalTo(_iconView.mas_centerY);
+    }];
+    
+    UIView *lineone =[[UIView alloc] init];
+    [lineone setBackgroundColor:RGBHex(g_gray)];
+    [self addSubview:lineone];
+    [lineone mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_iconView.mas_bottom).offset(5);
+        make.left.equalTo(self).offset(0);
+        make.right.equalTo(self).offset(0);
+        make.height.mas_equalTo(1);
+    }];
+    
+    _buttonMsg = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_buttonMsg.layer setCornerRadius:5];
+    [_buttonMsg.layer setMasksToBounds:YES];
+    [_buttonMsg.layer setBorderWidth:1];
+    [_buttonMsg.layer setBorderColor:[UIColor redColor].CGColor];
+    [_buttonMsg setImage:[UIImage imageNamed:@"icon_msg_hd"] forState:UIControlStateNormal];
+    [_buttonMsg.titleLabel setFont:[UIFont systemFontOfSize:14]];
+    [_buttonMsg setTitleColor:RGBHex(g_black) forState:UIControlStateNormal];
+    [_buttonMsg setTitle:@"发送短信" forState:UIControlStateNormal];
+    [_buttonMsg addTarget:self action:@selector(buttonTarget:) forControlEvents:UIControlEventTouchUpInside];
+    [_buttonMsg setTitleEdgeInsets:UIEdgeInsetsMake(0, 10, 0, 0)];
+    [self addSubview:_buttonMsg];
+    [_buttonMsg mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(lineone.mas_bottom).offset(10);
+        make.height.mas_equalTo(35);
+        make.left.equalTo(self).offset(10);
+        make.right.equalTo(self.mas_centerX).offset(-10);
+    }];
+    
+    _buttonCall = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_buttonCall.layer setCornerRadius:5];
+    [_buttonCall.layer setMasksToBounds:YES];
+    [_buttonCall.layer setBorderWidth:1];
+    [_buttonCall.layer setBorderColor:[UIColor redColor].CGColor];
+    [_buttonCall setTitle:@"拨打电话" forState:UIControlStateNormal];
+    [_buttonCall.titleLabel setFont:[UIFont systemFontOfSize:14]];
+    [_buttonCall addTarget:self action:@selector(buttonTarget:) forControlEvents:UIControlEventTouchUpInside];
+    [_buttonCall setTitleEdgeInsets:UIEdgeInsetsMake(0, 10, 0, 0)];
+    [_buttonCall setTitleColor:RGBHex(g_black) forState:UIControlStateNormal];
+    [_buttonCall setImage:[UIImage imageNamed:@"icon_phone_hd"] forState:UIControlStateNormal];
+    [self addSubview:_buttonCall];
+    [_buttonCall mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(lineone.mas_bottom).offset(10);
+        make.height.mas_equalTo(35);
+        make.right.equalTo(self).offset(-10);
+        make.left.equalTo(self.mas_centerX).offset(10);
+    }];
+}
+
+- (void) setModel:(CarOrderModel *)model
+{
+    [super setModel:model];
+    [_driverName setText:model.dRealName];
+    [_driverTypeLabel setText:[@"1" isEqualToString:model.dType]?@"[自营]":@"[挂靠]"];
+    [_carNumber setText:model.carNo];
+    [_carLabel setText:model.carDesc];
+    [_iconView sd_setCircleImageWithURL:[CommonUtility driverHeaderImageUrl:model.driverId] placeholderImage:[UIImage imageNamed:@"icon_driver"]];
+    
+    if ([@"6" isEqualToString:model.state]) {
+        [_buttonSubmit setTitle:@"支付\n订单" forState:UIControlStateNormal];
+    }
+    //    [_buttonSubmit setTitle:[CommonUtility getOrderDescription:model.state] forState:UIControlStateNormal];
+    //    if ([@"3" isEqualToString:model.state])
+    //    {
+    //        [self updateUIView:model needDistance:YES];
+    //        [_buttonSubmit setTitle:@"取消订单" forState:UIControlStateNormal];
+    //    }else if([@"4" isEqualToString:model.state]) //开始形成
+    //    {
+    //        [_driverName setText:model.dRealName];
+    //        [_moneyLabel setHidden:YES];
+    //        [_buttonSubmit setTitle:@"开始行程" forState:UIControlStateNormal];
+    //        [_buttonSubmit setEnabled:NO];
+    //        [self updateUIView:model needDistance:YES];
+    //    }else if([@"5" isEqualToString:model.state]) //结算
+    //    {
+    //        [_buttonSubmit setTitle:@"支付费用" forState:UIControlStateNormal];
+    //        [_buttonSubmit setEnabled:YES];
+    //        [self updateUIView:model needDistance:NO];
+    //    }else{
+    //        [_moneyLabel setText:@""];
+    //        [_moneyLabel setHidden:YES];
+    //        [self updateUIView:model needDistance:NO];
+    //    }
+    
+}
+
+- (void) buttonTarget:(id)sender
+{
+    if (_buttonCall == sender) {
+        [CommonUtility callTelphone:((CarOrderModel*)self.model).dPhoneNo];
+        return;
+    }
+    if (_buttonMsg == sender) {
+        [CommonUtility sendMessage:((CarOrderModel*)self.model).dPhoneNo];
+        return;
+    }
+    if (_delegate && [_delegate respondsToSelector:@selector(buttonTarget:)]) {
+        [_delegate buttonTarget:sender];
+    }
+}
+
+@end

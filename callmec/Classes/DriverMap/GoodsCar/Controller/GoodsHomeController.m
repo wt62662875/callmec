@@ -1,0 +1,406 @@
+//
+//  GoodsHomeController.m
+//  callmec
+//
+//  Created by sam on 16/8/11.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "GoodsHomeController.h"
+#import "AppiontGoodsCarController.h"
+#import "WaitingGoodsCarController.h"
+#import "PayOrderController.h"
+
+#import "GoodsHomeCell.h"
+
+#import "CarOrderModel.h"
+
+@interface GoodsHomeController ()<UITableViewDataSource,UITableViewDelegate,TargetActionDelegate,MAMapViewDelegate>
+@property (nonatomic,strong) UIView *bottom_container;
+@property (nonatomic, strong) UIButton *btn_left;
+@property (nonatomic, strong) UIButton *btn_right;
+@property (nonatomic,strong) UITableView *mTableView;
+@property (nonatomic,strong) NSMutableArray *dataArray;
+@property (nonatomic,strong) UIView *tipView;
+
+@property (nonatomic,strong) UIView *middle_container;
+@end
+
+@implementation GoodsHomeController
+{
+    NSInteger page;
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.headerView setHidden:YES];
+    [self initView];
+}
+
+- (void) initView
+{
+    
+    _dataArray =[NSMutableArray array];
+    _mTableView = [[UITableView alloc] init];
+    _mTableView.delegate = self;
+    _mTableView.dataSource = self;
+    _mTableView.mj_header = [MJRefreshHeader headerWithRefreshingBlock:^{
+        [self fetchData];
+    }];
+    _mTableView.mj_footer = [MJRefreshAutoFooter footerWithRefreshingBlock:^{
+        [self fetchMoreData];
+    }];
+    [_mTableView setBackgroundColor:RGBHex(g_assit_gray)];
+    [self.view addSubview:_mTableView];
+    
+    [self initTableCenterView];
+    [self initBottomView];
+    
+    [_mTableView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.view);
+        make.left.equalTo(self.view);
+        make.right.equalTo(self.view);
+        make.bottom.equalTo(_bottom_container.mas_top);
+    }];
+    
+    _tipView =[[UIView alloc] init];
+    UILabel *tipLabel = [[UILabel alloc] init];
+    [tipLabel setText:@"尊敬的用户\n欢迎使用呼我货的，点击底部按钮开始发货"];
+    [tipLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:14]];//[UIFont systemFontOfSize:14]
+    [tipLabel setTextColor:RGBHex(g_assit_c)];
+    [tipLabel setTextAlignment:NSTextAlignmentCenter];
+    [tipLabel setLineBreakMode:NSLineBreakByCharWrapping];
+    [tipLabel setNumberOfLines:0];
+    [_tipView setBackgroundColor:[UIColor whiteColor]];
+    [_tipView addSubview:tipLabel];
+    [_tipView setHidden:YES];
+    [tipLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_tipView);
+        make.left.equalTo(_tipView);
+        make.right.equalTo(_tipView);
+        make.bottom.equalTo(_tipView);
+    }];
+    [self.view addSubview:_tipView];
+    [_tipView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.view);
+        make.left.equalTo(self.view);
+        make.right.equalTo(self.view);
+        make.height.mas_equalTo(60);
+    }];
+}
+
+- (void) viewDidAppear:(BOOL)animated
+{
+    [self fetchData];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+- (void) buttonTarget:(id)button
+{
+    if (_btn_left == button) {
+        AppiontGoodsCarController *appiont = [[AppiontGoodsCarController alloc] init];
+        [self.navigationController pushViewController:appiont animated:YES];
+    }
+}
+
+#pragma mark - UITableViewDataSource
+
+- (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return _dataArray.count;
+}
+
+- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 1;
+}
+
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *cellid = @"cellid";
+    GoodsHomeCell *cell = [tableView dequeueReusableCellWithIdentifier:cellid];
+    if (!cell) {
+        cell = [[GoodsHomeCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellid];
+    }
+    CarOrderModel *model = _dataArray[indexPath.section];
+    cell.model = model;
+    return cell;
+}
+#pragma mark - UITableViewDelegate
+
+- (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 100;
+}
+
+- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    CarOrderModel *model = _dataArray[indexPath.section];
+    if (![@"6" isEqualToString:model.state]) {
+        WaitingGoodsCarController *waiting = [[WaitingGoodsCarController alloc] init];
+        waiting.model_dict = self.model_dict;
+        waiting.model = model;
+        waiting.orderId = model.ids;
+        [self.navigationController pushViewController:waiting animated:YES];
+    }else{
+        PayOrderController *pay = [[PayOrderController alloc] init];
+        pay.orderId = model.ids;
+        [self.navigationController pushViewController:pay animated:YES];
+    }
+}
+
+
+- (void) setModel:(CarOrderModel *)model
+{
+    _model = model;
+    [_dataArray removeAllObjects];
+    [_dataArray addObject:_model];
+}
+
+- (void) fetchData
+{
+    page = 1;
+    [CarOrderModel fetchOrderList:page withType:@"3" Succes:^(NSArray *result, int pageCount, int recordCount) {
+        
+        [_dataArray removeAllObjects];
+        for (NSDictionary *dict in result)
+        {
+            CarOrderModel *model = [[CarOrderModel alloc] initWithDictionary:dict error:nil];
+            [_dataArray addObject:model];
+        }
+        if (_dataArray.count>0) {
+//            [_tipView setHidden:YES];
+            [_mTableView setHidden:NO];
+            [_middle_container setHidden:YES];
+        }else{
+//            [_tipView setHidden:NO];
+            [_mTableView setHidden:YES];
+            [_middle_container setHidden:NO];
+        }
+        page++;
+        [self endRefresh];
+    } failed:^(NSInteger errorCode, NSString *errorMessage) {
+         NSLog(@"errorMessage:%@",errorMessage);
+        [self endRefresh];
+    }];
+}
+
+- (void) fetchMoreData
+{
+    [CarOrderModel fetchOrderList:page withType:@"3" Succes:^(NSArray *result, int pageCount, int recordCount) {
+        for (NSDictionary *dict in result)
+        {
+            CarOrderModel *model = [[CarOrderModel alloc] initWithDictionary:dict error:nil];
+            [_dataArray addObject:model];
+        }
+        if (result.count>0) {
+           page++;
+        }
+        if (_dataArray.count>0) {
+//            [_tipView setHidden:YES];
+        }else{
+//            [_tipView setHidden:NO];
+        }
+        [self endRefresh];
+    } failed:^(NSInteger errorCode, NSString *errorMessage) {
+        NSLog(@"errorMessage:%@",errorMessage);
+        [self endRefresh];
+    }];
+    page++;
+}
+
+- (void) endRefresh
+{
+    [_mTableView.mj_header endRefreshing];
+    [_mTableView.mj_footer endRefreshing];
+    [_mTableView reloadData];
+}
+
+//- (void) initTableCenterView
+//{
+//    _middle_container = [[UIView alloc] initWithFrame:_mTableView.bounds];
+//    [_middle_container setBackgroundColor:[UIColor clearColor]];
+//    _mTableView.backgroundView = _middle_container;
+//    UIImageView *busImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"img_empty_hd"]];
+//    [_middle_container addSubview:busImageView];
+//    [busImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.centerX.equalTo(_middle_container);
+//        make.centerY.equalTo(_middle_container);
+//    }];
+//    
+//    UILabel *busTitle = [[UILabel alloc] init];
+//    [busTitle setText:@"尊敬的用户"];
+//    [busTitle setFont:[UIFont systemFontOfSize:15]];
+//    [busTitle setContentMode:UIViewContentModeCenter];
+//    [busTitle setTextColor:[UIColor blackColor]];
+//    [_middle_container addSubview:busTitle];
+//    [busTitle mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.centerX.equalTo(_middle_container);
+//        make.top.equalTo(busImageView.mas_bottom);
+//        make.height.mas_equalTo(30);
+//        make.width.mas_equalTo(80);
+//    }];
+//    
+//    UILabel *busDesc = [[UILabel alloc] init];
+//    [busDesc setText:@"欢迎使用呼我货的，\n点击底部按钮开始发货"];
+//    [busDesc setFont:[UIFont systemFontOfSize:13]];
+//    [busDesc setTextColor:RGBHex(g_assit_c)];//RGBHex(g_assit_c)
+//    [busDesc setLineBreakMode:NSLineBreakByWordWrapping];
+//    [busDesc setTextAlignment:NSTextAlignmentCenter];
+//    [busDesc setNumberOfLines:0];
+//    [_middle_container addSubview:busDesc];
+//    [busDesc mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.centerX.equalTo(_middle_container);
+//        make.top.equalTo(busTitle.mas_bottom);
+//        //make.height.mas_equalTo(30);
+//        make.width.mas_equalTo(180);
+//    }];
+//}
+
+- (void) initBottomView
+{
+    _bottom_container =[[UIView alloc] init];
+    _btn_left = [UIButton buttonWithType:UIButtonTypeCustom];
+    _btn_right = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_btn_left setImage:[UIImage imageNamed:@"index_icon_now"] forState:UIControlStateNormal];
+    [_btn_left setTitle:@"现在用车" forState:UIControlStateNormal];
+    [_btn_left setTitleColor:RGBHex(g_white) forState:UIControlStateNormal];
+    [_btn_left.titleLabel setFont:[UIFont systemFontOfSize:15]];
+    [_btn_left setBackgroundColor:RGBHex(g_blue)];
+    [_btn_left setTag:1];
+    [_btn_left addTarget:self action:@selector(buttonTarget:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [_btn_right setImage:[UIImage imageNamed:@"yuyuebai1"] forState:UIControlStateNormal];
+    [_btn_right setTitle:@"预约用车" forState:UIControlStateNormal];
+    [_btn_right setTitleColor:RGBHex(g_white) forState:UIControlStateNormal];
+    [_btn_right.titleLabel setFont:[UIFont systemFontOfSize:15]];
+    [_btn_right setBackgroundColor:RGBHex(g_blue)];
+    
+    [_btn_right setTag:2];
+    [_btn_right addTarget:self action:@selector(buttonTarget:) forControlEvents:UIControlEventTouchUpInside];
+    [_bottom_container setBackgroundColor:RGBHex(g_gray)];
+    
+    UIView *grayline = [[UIView alloc] init];
+    [grayline setBackgroundColor:RGBHex(g_assit_gray)];
+    [_bottom_container setBackgroundColor:RGBHex(g_gray)];
+    [_bottom_container addSubview:grayline];
+    
+    [grayline mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_bottom_container);
+        make.left.equalTo(_bottom_container);
+        make.right.equalTo(_bottom_container);
+        make.height.mas_equalTo(1);
+    }];
+    
+    
+    [_bottom_container addSubview:_btn_left];
+    [_bottom_container addSubview:_btn_right];
+    [_btn_left mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(grayline.mas_bottom);
+        make.left.equalTo(_bottom_container);
+        make.height.equalTo(_bottom_container);
+        //        make.width.equalTo(_bottom_container.mas_width).multipliedBy(0.5);
+        make.width.equalTo(_bottom_container).dividedBy(2);
+    }];
+    
+    [_btn_right mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(grayline.mas_bottom);
+        make.left.equalTo(_btn_left.mas_right).offset(1);
+        make.height.equalTo(_bottom_container);
+        //        make.width.equalTo(_bottom_container.mas_width).multipliedBy(0.5);
+        make.width.equalTo(_bottom_container).dividedBy(2);
+    }];
+    [_btn_left setTitle:@"发布带货信息" forState:UIControlStateNormal];
+    [_btn_left setImage:[UIImage imageNamed:@"huodebai"] forState:UIControlStateNormal];
+    [_btn_left setImageEdgeInsets:UIEdgeInsetsMake(0,0, 0,10)];
+    [_btn_left mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(grayline.mas_bottom);
+        make.left.equalTo(_bottom_container);
+        make.height.equalTo(_bottom_container);
+        make.width.equalTo(_bottom_container.mas_width);
+    }];
+    
+    [self.view addSubview:_bottom_container];
+    [_bottom_container mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.view);
+        make.height.mas_equalTo(60);
+        make.width.equalTo(self.view);
+        make.bottom.equalTo(self.view);
+    }];
+}
+
+- (void) initTableCenterView
+{
+    _middle_container = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 600, 600)];
+    [_middle_container setUserInteractionEnabled:YES];
+    UITapGestureRecognizer *g1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(gesture:)];
+    g1.numberOfTapsRequired =1;
+    g1.numberOfTouchesRequired=1;
+    [_middle_container addGestureRecognizer:g1];
+    [_middle_container setBackgroundColor:[UIColor clearColor]];
+    //    _mTableView.backgroundView = _middle_container;
+    [self.view addSubview:_middle_container];
+    [_middle_container mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(self.view);
+        make.centerY.equalTo(self.view).offset(-80);
+        make.width.height.mas_equalTo(200);
+    }];
+    UIImageView *busImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"dianjizhongjian"]];
+    [_middle_container addSubview:busImageView];
+    [busImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(_middle_container);
+        make.centerY.equalTo(_middle_container);
+    }];
+    
+    UILabel *busTitle = [[UILabel alloc] init];
+    [busTitle setText:@"尊敬的用户"];
+    [busTitle setFont:[UIFont systemFontOfSize:15]];
+    [busTitle setContentMode:UIViewContentModeCenter];
+    [busTitle setTextColor:[UIColor blackColor]];
+    [_middle_container addSubview:busTitle];
+    [busTitle mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(_middle_container);
+        make.top.equalTo(busImageView.mas_bottom);
+        make.height.mas_equalTo(30);
+        make.width.mas_equalTo(80);
+    }];
+    
+    UILabel *busDesc = [[UILabel alloc] init];
+    [busDesc setText:@"欢迎使用呼我货的，\n点击底部按钮开始发货"];
+    [busDesc setFont:[UIFont systemFontOfSize:13]];
+    [busDesc setTextColor:RGBHex(g_assit_c)];//RGBHex(g_assit_c)
+    [busDesc setLineBreakMode:NSLineBreakByWordWrapping];
+    [busDesc setTextAlignment:NSTextAlignmentCenter];
+    [busDesc setNumberOfLines:0];
+    [_middle_container addSubview:busDesc];
+    [busDesc mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(_middle_container);
+        make.top.equalTo(busTitle.mas_bottom);
+        make.width.mas_equalTo(180);
+    }];
+}
+
+- (void) gesture:(UITapGestureRecognizer*)g
+{
+    AppiontGoodsCarController *special = [[AppiontGoodsCarController alloc] init];
+    [self.navigationController pushViewController:special animated:YES];
+}
+- (void) reloadData
+{
+    [self fetchData];
+}
+
+@end

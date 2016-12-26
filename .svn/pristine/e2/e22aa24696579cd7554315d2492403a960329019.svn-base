@@ -1,0 +1,233 @@
+//
+//  chooseLineViewController.m
+//  callmec
+//
+//  Created by wt on 2016/11/22.
+//  Copyright © 2016年 sam. All rights reserved.
+//
+
+#import "chooseLineViewController.h"
+#import "collectionCell.h"
+#import "headCollectionReusableView.h"
+#import "CarPoolingHomeController.h"
+#import "chooseDetailsLineCollectionViewController.h"
+#import "CMSearchManager.h"
+
+
+@interface chooseLineViewController ()<UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,backLineDelegate>
+{
+    NSMutableArray *datasArray;
+
+}
+@property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
+
+@end
+
+@implementation chooseLineViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [_collectionView registerNib:[UINib nibWithNibName:@"collectionCell" bundle:nil] forCellWithReuseIdentifier:@"collectionCell"];
+    [_collectionView registerNib:[UINib nibWithNibName:@"headCollectionReusableView" bundle:nil] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"headCollectionReusableView"];
+    
+    if ([_startOrEnd isEqualToString:@"start"]) {
+        [self setTitle:@"出发地"];
+    }else{
+        [self setTitle:@"目的地"];
+    }
+    [self.headerView setBackgroundColor:[UIColor whiteColor]];
+    // Do any additional setup after loading the view from its nib.
+    
+
+    [self getdatas];
+    
+    // 下拉刷新
+    _collectionView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        // 进入刷新状态后会自动调用这个block
+        datasArray = [[NSMutableArray alloc]init];
+        [self initLocationConfig];
+        [self getdatas];
+    }];
+}
+- (void) amapLocationManager:(AMapLocationManager *)manager didUpdateLocation:(CLLocation *)location
+{
+    [super amapLocationManager:manager didUpdateLocation:location];
+        [[CMSearchManager sharedInstance] searchLocation:location completionBlock:^(id request,
+                                                                                    CMLocation *clocation,
+                                                                                    NSError *error)
+         {
+             NSLog(@"clocation:%@",clocation);
+             [GlobalData sharedInstance].city =clocation.city;
+
+             [self stopLocation];
+         }];
+
+}
+
+- (void) amapLocationManager:(AMapLocationManager *)manager didFailWithError:(NSError *)error
+{
+    
+    if (error) {
+        NSLog(@"error:%@",error);
+        [MBProgressHUD showAndHideWithMessage:@"无法获取定位信息！" forHUD:nil onCompletion:^{
+//            [self.navigationController popViewControllerAnimated:YES];
+        }];
+        
+    }
+    [super amapLocationManager:manager didFailWithError:error];
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    
+}
+
+-(void)listLineDatas:(NSString *)name departmentId:(NSString *)departmentId{
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    if (name.length>0) {
+        [params setObject:name forKey:@"name"];
+    }
+    if (departmentId.length>0) {
+        [params setObject:departmentId forKey:@"departmentId"];
+    }
+    
+    [HttpShareEngine callWithFormParams:params withMethod:@"listLine" succ:^(NSDictionary *resultDictionary) {
+        NSLog(@"%@",resultDictionary);
+        NSArray *resultArray = [resultDictionary objectForKey:@"rows"];
+        NSMutableArray *tempArray = [[NSMutableArray alloc]initWithObjects:[[NSMutableDictionary alloc] initWithObjectsAndKeys:[GlobalData sharedInstance].city,@"shortName", nil], nil];
+        for (int i = 0; i<resultArray.count; i++) {
+            NSMutableDictionary *tempDic = [[NSMutableDictionary alloc]initWithObjectsAndKeys:[self getString:[resultArray[i] objectForKey:@"name"]],@"shortName", nil];
+            [tempArray addObject:tempDic];
+        }
+        NSMutableDictionary * tempDic = [[NSMutableDictionary alloc]initWithObjectsAndKeys:[NSString stringWithFormat:@"当前城市-%@",[GlobalData sharedInstance].city],@"shortName",tempArray ,@"children",nil];
+        [datasArray insertObject:tempDic atIndex:0];
+        NSLog(@"%@",datasArray);
+
+        [_collectionView reloadData];
+    } fail:^(NSInteger errorCode, NSString *errorMessage) {
+        [MBProgressHUD showAndHideWithMessage:errorMessage forHUD:nil];
+    }];
+}
+-(void)getdatas{
+    NSDictionary *params = [[NSDictionary alloc]initWithObjectsAndKeys:@"1",@"type", nil];
+    
+    [HttpShareEngine callWithFormParams:params withMethod:@"getDepartmentTree" succ:^(NSDictionary *resultDictionary) {
+        NSLog(@"%@",resultDictionary);
+        NSArray *resultArray = [resultDictionary objectForKey:@"rows"];
+        datasArray = [[NSMutableArray alloc]init];
+
+        for (int i = 0; i<resultArray.count; i++) {
+            [datasArray addObject:resultArray[i]];
+        }
+        NSLog(@"%@",datasArray);
+        if ([GlobalData sharedInstance].city.length > 0) {
+            [self listLineDatas:[NSString stringWithFormat:@"%@-",[GlobalData sharedInstance].city] departmentId:@""];
+        }
+        [_collectionView reloadData];
+       
+        
+        [_collectionView.mj_header endRefreshing];
+    } fail:^(NSInteger errorCode, NSString *errorMessage) {
+        [MBProgressHUD showAndHideWithMessage:errorMessage forHUD:nil];
+    }];
+}
+-(NSString*)getString:(NSString *)str{
+    NSRange range = [str rangeOfString:@"-"];//匹配得到的下标
+    return [str substringFromIndex:range.location+1];
+}
+
+
+//定义展示的UICollectionViewCell的个数
+-(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
+    NSArray *tempArr =[datasArray[section] objectForKey:@"children"];
+    return tempArr.count;
+}
+//每个UICollectionView展示的内容
+-(UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString * CellIdentifier = @"collectionCell";
+    collectionCell * cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
+
+    cell.label.text = [[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"];
+ 
+    return  cell;
+}
+//选择cell时
+-(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.section == 0 && ([GlobalData sharedInstance].city.length > 0) && ![datasArray[0] objectForKey:@"id"]) {
+        if ([_startOrEnd isEqualToString:@"start"]) {
+            [self.delegate sendLine:[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"] end:@""];
+        }else{
+            [self.delegate sendLine:@"" end:[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"]];
+        }
+        [self.navigationController popViewControllerAnimated:YES];
+    }else{
+        chooseDetailsLineCollectionViewController *detailsCV = [[chooseDetailsLineCollectionViewController alloc]initWithNibName:@"chooseDetailsLineCollectionViewController" bundle:nil];
+        detailsCV.delegate = self;
+        
+            [detailsCV setStartOrEnd:_startOrEnd];
+        [detailsCV setGetID:[NSString stringWithFormat:@"%@",[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"id"]]];
+        
+        [self.navigationController pushViewController:detailsCV animated:YES];
+    }
+    
+}
+-(void)backLine:(NSString *)start end:(NSString *)end{
+    if ([_startOrEnd isEqualToString:@"start"]) {
+        [self.delegate sendLine:start end:@""];
+    }else{
+        [self.delegate sendLine:@"" end:end];
+    }
+    
+    [self.navigationController popToRootViewControllerAnimated:NO];
+}
+
+//定义每个UICollectionView 的大小
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    return CGSizeMake(95, 50);
+}
+//定义每个UICollectionView 的 margin
+-(UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout insetForSectionAtIndex:(NSInteger)section
+{
+    return UIEdgeInsetsMake(8, 7, 8, 7);
+}
+-(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
+    return datasArray.count;
+}
+- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath{
+    
+    UICollectionReusableView *collectionReusableView = nil;
+    if (kind == UICollectionElementKindSectionHeader){
+        headCollectionReusableView * headView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"headCollectionReusableView" forIndexPath:indexPath];
+        
+    
+            headView.label.text = [datasArray[indexPath.section] objectForKey:@"shortName"];
+        
+        
+        
+        collectionReusableView = headView;
+    }
+    
+    return collectionReusableView;
+}
+-(CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section{
+    CGSize size = {SCREENWIDTH,44};
+    return size;
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

@@ -1,0 +1,117 @@
+
+// 定义任意的singleton对象
+#define SYNTHESIZE_SINGLETON_FOR_CLASS(classname) \
+\
+static classname *shared##classname = nil; \
+\
++ (classname *)shared##classname \
+{ \
+@synchronized(self) \
+{ \
+if (shared##classname == nil) \
+{ \
+shared##classname = [[self alloc] init]; \
+} \
+} \
+\
+return shared##classname; \
+}
+
+#ifndef callme_pch
+#define callme_pch
+
+//网络请求头文件
+#import "HttpAFNetworkEngine.h"
+#import "AFNetworkActivityIndicatorManager.h"
+
+#import "UIImageView+WebCache.h"
+
+
+#import "MJRefresh.h"
+#import "MBProgressHUD.h"
+#import "MBProgressHUD+ZXCExtension.h"
+#import "MBProgressHUD+LKAddition.h"
+
+#import "JSONModel.h"
+#import "LKJSONKit.h"
+#import <SDWebImage/SDWebImageManager.h>
+#import <Masonry.h>
+#import <TZImagePickerController.h>
+#import <IQKeyboardManager.h>
+
+#import "AppDelegate.h"
+#import "BaseModel.h"
+#import "ThirdPartyLogin.h"
+#import "GlobalData.h"
+#import "TripTypeModel.h"
+#import "SandBoxHelper.h"
+#import "NSString+Extension.h"
+#import "UIColor+Hex.h"
+#import "ImageTools.h"
+#import "UIImageView+Circle.h"
+#import "JCAlertView.h"
+#import "CommonUtility.h"
+#import "CarOrderModel.h"
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+#define kScreenSize   [[UIScreen mainScreen] bounds].size
+
+#define MAPAPIKey @"a63301ad8f3d96b890e2805ff56abf8c"    //高德APIKEY
+#define IOS_VERSION [[[UIDevice currentDevice] systemVersion] floatValue]
+
+#define RGB(r,g,b) [UIColor colorWithRed:(r)/255.0f green:(g)/255.0f blue:(b)/255.0f alpha:1]
+#define RGBA(r,g,b,alp) [UIColor colorWithRed:(r)/255.0f green:(g)/255.0f blue:(b)/255.0f alpha:alp]
+#define RGBHex(a) [UIColor colorWithHexString:a]
+#define RGBHexa(a,b) [UIColor colorWithHexString:a alpha:b]
+
+#define scaleImage(str,l,t,r,b) [[UIImage imageNamed:str] resizableImageWithCapInsets:UIEdgeInsetsMake(l, t, r, b) resizingMode:UIImageResizingModeStretch]
+/**** 用户信息更新  ******/
+#define NOTICE_USERINFO_UPDATE @"NOTICE_USERINFO_UPDATE_C"
+
+/**** 用户信息更新  *****/
+#define NOTICE_IMAGE_DOWNLOAD_FINISH @"NOTICE_IMAGE_DOWNLOAD_FINISH_C"
+
+#define NOTICE_ORDER_STATE_UPDATE @"NOTICE_ORDER_STATE_UPDATE"
+#define NOTICE_ORDER_UNFIHISHED_STATE @"NOTICE_ORDER_UNFIHISHED_STATE"
+
+#define NOTICE_LOCATION_START @"NOTICE_LOCATION_START"
+#define NOTICE_LOCATION_STOP  @"NOTICE_LOCATION_STOP"
+
+#define g_white  @"#FFFFFF"    //白色
+#define g_gray  @"#ebebeb"    //若辅助内容
+#define g_red  @"#ff2e31"     //主色调
+#define g_blue  @"#70C0F7"     //蓝色主色调
+
+#define g_black @"#222222"   //主内容色调
+#define g_header_c @"ff4e22"
+
+#define g_assit_c  @"#6f7b89" //辅助内容色调
+#define g_assit_c1 @"#6f7b89"
+#define g_assit_blue @"4baafa"            //
+#define g_assit_orign @"f4674b"           //
+#define g_assit_yellow @"ffa63e"
+#define g_assit_green @"50bd3e"
+#define g_assit_purple @"7d5dbd"
+#define g_assit_gray @"ebebeb"
+
+
+#define PUSH_MESSAGE_TYPE_ORDER_TO_DRIVERS  1                   //推送订单给所有司机等司机抢单
+#define PUSH_MESSAGE_TYPE_ORDER_TO_DRIVER  2                    //推送订单给抢到单的司机来确认订单
+#define PUSH_MESSAGE_TYPE_ORDER_TO_MEMBER  3                    //推送抢到订单的司机给乘客
+#define PUSH_MESSAGE_TYPE_ORDER_START_TO_MEMBER  4              //推送乘客司机点了开始行程
+#define PUSH_MESSAGE_TYPE_ORDER_END_TO_MEMBER 5                 //推送乘客司机点了结束行程
+#define PUSH_MESSAGE_TYPE_ORDER_CANCEL_TO_MEMBER  6             //推送乘客司机取消行程
+#define PUSH_MESSAGE_TYPE_ORDER_CANCEL_TO_DRIVER  7             //推送司机乘客取消行程
+#define PUSH_MESSAGE_TYPE_ORDER_PAYED_TO_DRIVER  8              //推送司机乘客已经付款
+#define PUSH_MESSAGE_TYPE_ORDER_REACH_TO_MEMBER  9              //推送乘客司机到达目的地
+#define PUSH_MESSAGE_TYPE_ORDER_MANUAL_TO_MEMBER 10             //推送乘客他的订单没有人接单
+
+#define PUSH_MESSAGE_TYPE_NOTIFY_TO_DRIVER 11                   //推送通知消息司机，无业务处理
+#define PUSH_MESSAGE_TYPE_NOTIFY_TO_MEMBER 12                   //推送通知消息给乘客， 无业务处理
+
+#define SCREENWIDTH [[UIScreen mainScreen]bounds].size.width
+#define SCREENHTIGHT [[UIScreen mainScreen]bounds].size.height
+#define USERDEFAULTS  [NSUserDefaults standardUserDefaults]
+
+#endif /* callme_pch */
