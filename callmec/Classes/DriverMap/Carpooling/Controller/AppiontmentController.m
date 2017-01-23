@@ -124,7 +124,7 @@
         make.top.equalTo(_containerView);
         make.left.equalTo(self.view);
         make.right.equalTo(self.view);
-        make.height.mas_equalTo(198);
+        make.height.mas_equalTo(148);
     }];
 
     //////1
@@ -179,31 +179,31 @@
     
     //thankFee
     //选择上车地点6
-    _thankFee = [[LeftInputView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
-    [_thankFee setTitleFont:[UIFont systemFontOfSize:14]];
-//    [_thankFee setTitle:@"选择绕路感谢费"];
-    [_thankFee setPlaceHolder:@"选择绕路感谢费"];
-    [_thankFee setTag:4];
-    [_thankFee setImageUrl:@"30yuan"];
-    [_thankFee setDelegate:self];
-    [_thankFee setEnable:NO];
-    [_tripView addSubview:_thankFee];
-    [_thankFee mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(linetfive.mas_bottom);
-        make.left.equalTo(_tripView);
-        make.height.mas_equalTo(50);
-        make.width.equalTo(_tripView);
-    }];
-    
-    UIView *linetsix =[[UIView alloc] init];
-    [linetsix setBackgroundColor:RGBHex(g_gray)];
-    [_tripView addSubview:linetsix];
-    [linetsix mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(_thankFee.mas_bottom).offset(0);
-        make.left.equalTo(_tripView).offset(40);
-        make.right.equalTo(_tripView).offset(-10);
-        make.height.mas_equalTo(1);
-    }];
+//    _thankFee = [[LeftInputView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+//    [_thankFee setTitleFont:[UIFont systemFontOfSize:14]];
+////    [_thankFee setTitle:@"选择绕路感谢费"];
+//    [_thankFee setPlaceHolder:@"选择绕路感谢费"];
+//    [_thankFee setTag:4];
+//    [_thankFee setImageUrl:@"30yuan"];
+//    [_thankFee setDelegate:self];
+//    [_thankFee setEnable:NO];
+//    [_tripView addSubview:_thankFee];
+//    [_thankFee mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.top.equalTo(linetfive.mas_bottom);
+//        make.left.equalTo(_tripView);
+//        make.height.mas_equalTo(50);
+//        make.width.equalTo(_tripView);
+//    }];
+//    
+//    UIView *linetsix =[[UIView alloc] init];
+//    [linetsix setBackgroundColor:RGBHex(g_gray)];
+//    [_tripView addSubview:linetsix];
+//    [linetsix mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.top.equalTo(_thankFee.mas_bottom).offset(0);
+//        make.left.equalTo(_tripView).offset(40);
+//        make.right.equalTo(_tripView).offset(-10);
+//        make.height.mas_equalTo(1);
+//    }];
     
     //LeftInputView
     
@@ -216,7 +216,7 @@
     [_feedbackMessage setTag:5];
     [_tripView addSubview:_feedbackMessage];
     [_feedbackMessage mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(linetsix.mas_bottom);
+        make.top.equalTo(linetfive.mas_bottom);
         make.left.equalTo(_tripView);
         make.height.mas_equalTo(50);
         make.width.equalTo(_tripView);
@@ -255,14 +255,14 @@
     
     _carsView =[[CarsChoiceView alloc] init];
     CarModel *model1 = [[CarModel alloc] initWithDictionary:@{@"carTitle":@"轿车",
-                                                              @"carIcon":@"putonghei",
-                                                              @"carIconLight":@"putonglan",
+                                                              @"carIcon":@"haohuahei",
+                                                              @"carIconLight":@"haohualan",
                                                               @"carType":@"4",
                                                               @"isSelected":@"0",
                                                               @"carMoney":@"10.0"} error:nil];
     CarModel *model2 = [[CarModel alloc] initWithDictionary:@{@"carTitle":@"7座商务",
-                                                              @"carIcon":@"haohuahei",
-                                                              @"carIconLight":@"haohualan",
+                                                              @"carIcon":@"putonghei",
+                                                              @"carIconLight":@"putonglan",
                                                               @"isSelected":@"1",
                                                               @"carType":@"3",
                                                               @"carMoney":@"10.0"} error:nil];
@@ -340,12 +340,12 @@
     [order setObject:@"true" forKey:@"appoint"];
     [order setObject:@(_peopleNumber) forKey:@"orderPerson"];
     
-    NSMutableDictionary *other = [NSMutableDictionary dictionary];
-    [other setObject:_money?_money:@"0" forKey:@"fee"];
-    [other setObject:@"绕路费" forKey:@"name"];
-    [other setObject:@"10" forKey:@"type"];
-    NSArray *array = [NSArray arrayWithObject:other];
-    [order setObject:array forKey:@"otherFee"];//array lk_JSONString]
+//    NSMutableDictionary *other = [NSMutableDictionary dictionary];
+//    [other setObject:_money?_money:@"0" forKey:@"fee"];
+//    [other setObject:@"绕路费" forKey:@"name"];
+//    [other setObject:@"10" forKey:@"type"];
+//    NSArray *array = [NSArray arrayWithObject:other];
+//    [order setObject:array forKey:@"otherFee"];//array lk_JSONString]
     if (_startTime) {
         [order setObject:[MyTimeTool formatDateTime:_startTime withFormat:@"yyyy-MM-dd HH:mm:00"] forKey:@"appointDate"];
     }else{
@@ -421,7 +421,7 @@
         [self.navigationController popViewControllerAnimated:YES];
     }else if(sender==self.rightButton){
         BrowerController *webview = [[BrowerController alloc] init];
-        webview.urlStr = [CommonUtility getArticalUrl:@"4"];
+        webview.urlStr = [CommonUtility getArticalUrl:@"4" type:@"2"];
         webview.titleStr = @"计价说明";
         [self.navigationController pushViewController:webview animated:YES];
     }else if([sender isKindOfClass:[UIView class]])
@@ -560,12 +560,12 @@
         [params setObject:[NSString stringWithFormat:@"%f",_startLocation.coordinate.latitude]forKey:@"sLatitude"];
         [params setObject:[NSString stringWithFormat:@"%f",_startLocation.coordinate.longitude] forKey:@"sLongitude"];
         
-        NSMutableDictionary *other = [NSMutableDictionary dictionary];
-        [other setObject:_money?_money:@"0" forKey:@"fee"];
-        [other setObject:@"绕路费" forKey:@"name"];
-        [other setObject:@"10" forKey:@"type"];
-        NSArray *array = [NSArray arrayWithObject:other];
-        [params setObject:[array lk_JSONString] forKey:@"otherFee"];
+//        NSMutableDictionary *other = [NSMutableDictionary dictionary];
+//        [other setObject:_money?_money:@"0" forKey:@"fee"];
+//        [other setObject:@"绕路费" forKey:@"name"];
+//        [other setObject:@"10" forKey:@"type"];
+//        NSArray *array = [NSArray arrayWithObject:other];
+//        [params setObject:[array lk_JSONString] forKey:@"otherFee"];
         if (_startTime) {
             [params setObject:[MyTimeTool formatDateTime:_startTime withFormat:@"yyyy-MM-dd HH:mm:00"] forKey:@"appointDate"];
         }else{

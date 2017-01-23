@@ -70,7 +70,7 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
 @property (nonatomic, strong) ItemView *endItem;              //上车地点
 @property (nonatomic,strong) ItemView *routeLine;               //线路
 @property (nonatomic,strong) ItemView *peopleNumber;            //上车人数
-@property (nonatomic,strong) ItemView *feeTip;                  //费用提示
+//@property (nonatomic,strong) ItemView *feeTip;                  //费用提示
 @property (nonatomic,strong) ItemView *extraMessage;            //附加留言
 @property (nonatomic,strong) UILabel *moneyLabel;
 @property (nonatomic,strong) UIButton *buttonCall;
@@ -298,23 +298,23 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
         make.width.equalTo(_top_container);
     }];
     
-    _feeTip =[[ItemView alloc] init];
-    [_feeTip.leftImageView setImage:[UIImage imageNamed:@"30yuan"]];
-    [_top_container addSubview:_feeTip];
-    [_feeTip.titleLabel setText:[NSString stringWithFormat:@"%@元",_model.otherFee]];
-    [_feeTip mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(_peopleNumber.mas_bottom).offset(10);
-        make.left.equalTo(_top_container).offset(10);
-        make.height.mas_equalTo(20);
-        make.width.equalTo(_top_container);
-    }];
+//    _feeTip =[[ItemView alloc] init];
+//    [_feeTip.leftImageView setImage:[UIImage imageNamed:@"30yuan"]];
+//    [_top_container addSubview:_feeTip];
+//    [_feeTip.titleLabel setText:[NSString stringWithFormat:@"%@元",_model.otherFee]];
+//    [_feeTip mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.top.equalTo(_peopleNumber.mas_bottom).offset(10);
+//        make.left.equalTo(_top_container).offset(10);
+//        make.height.mas_equalTo(20);
+//        make.width.equalTo(_top_container);
+//    }];
     
     _extraMessage =[[ItemView alloc] init];
     [_extraMessage.leftImageView setImage:[UIImage imageNamed:@"beizhu"]];
     [_top_container addSubview:_extraMessage];
     [_extraMessage.titleLabel setText:[NSString stringWithFormat:@"%@",_model.descriptions]];
     [_extraMessage mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(_feeTip.mas_bottom).offset(10);
+        make.top.equalTo(_peopleNumber.mas_bottom).offset(10);
         make.left.equalTo(_top_container).offset(10);
         make.height.mas_equalTo(20);
         make.width.equalTo(_top_container);
@@ -1001,7 +1001,12 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
     }
     @catch (NSException *exception){}
     @finally{}
-    [self updateNoticeView:[CarOrderModel convertDriverModel:order]];
+    if([@"-1" isEqualToString:order.state]){
+        [MBProgressHUD showAndHideWithMessage:@"司机已取消订单" forHUD:nil];
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    }{
+        [self updateNoticeView:[CarOrderModel convertDriverModel:order]];
+    }
 }
 
 - (void) updateNoticeView:(CarOrderModel*)order
@@ -1015,7 +1020,7 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
         }
         _dPhoneNo = order.dPhoneNo;
         [self changeButtonCallStatue];
-        if ([@"3" isEqualToString:order.state]) {
+        if ([@"3" isEqualToString:order.state] || [@"4" isEqualToString:order.state]) {
             [_headerLabel removeFromSuperview];
             [_driverHeaderView setIsIndicated:YES];
             [_driverHeaderView setHidden:NO];
@@ -1032,11 +1037,13 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
             [_driverHeaderView setImageUrl:[CommonUtility driverHeaderImageUrl:order.driverId]];
             [_driverHeaderView setTitle:@""];
             [_driverHeaderView setButtonText:@"无人接单"];
-        }else if([@"4" isEqualToString:order.state]){
-            [_top_container removeFromSuperview];            
-            [self.leftButton setHidden:YES];
-            [self initOrderView:order];
-        }else if([@"5" isEqualToString:order.state])
+        }
+//        else if([@"4" isEqualToString:order.state]){
+//            [_top_container removeFromSuperview];            
+//            [self.leftButton setHidden:YES];
+//            [self initOrderView:order];
+//        }
+        else if([@"5" isEqualToString:order.state])
         {
             [_top_container removeFromSuperview];
             
@@ -1098,7 +1105,7 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
     [_routeLine.titleLabel setText:model.lineName];
     [_startItem.titleLabel setText:model.slocation];
     [_peopleNumber.titleLabel setText:model.orderPerson];
-    [_feeTip.titleLabel setText:model.otherFee];
+//    [_feeTip.titleLabel setText:model.otherFee];
     [_extraMessage.titleLabel setText:model.descriptions];
     _dPhoneNo = _model.dPhoneNo;
     [self changeButtonCallStatue];

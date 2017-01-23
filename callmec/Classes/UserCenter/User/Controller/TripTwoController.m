@@ -179,11 +179,12 @@
             praise.orderModel = sender;
             praise.delegateCallback = self;
             [self.navigationController pushViewController:praise animated:YES];
-        }else if ([@"2" isEqualToString:order.state]||[@"3" isEqualToString:order.state]||[@"4" isEqualToString:order.state]||[@"5" isEqualToString:order.state])
+        }else if ([@"1" isEqualToString:order.state]||[@"2" isEqualToString:order.state]||[@"3" isEqualToString:order.state]||[@"4" isEqualToString:order.state]||[@"5" isEqualToString:order.state])
         {
             WaitingCarPoolingCtrl *order_ctrl = [[WaitingCarPoolingCtrl alloc] init];
             order_ctrl.orderId = order.ids;
             [order_ctrl setModel:[[CarOrderModel alloc] initWithDictionary:[order toDictionary] error:nil]];
+
             [self.navigationController pushViewController:order_ctrl animated:YES];
         }
     }

@@ -11,14 +11,20 @@
 #import "RightTitleLabel.h"
 #import "RateViewBar.h"
 #import "PlaceHolderTextView.h"
+#import "JCTagView.h"
 
 
-@interface AppraiseController ()<RateViewBarDelegate>
+@interface AppraiseController ()<RateViewBarDelegate,JCTagViewDelegate>
+{
+    NSMutableArray *contentArray;
+    NSString *contentString;
+
+}
 @property (nonatomic,strong) UIView *bottom_container;
 @property (nonatomic,strong) UIView *top_container;
 @property (nonatomic,strong) UIImageView *iconView;
 //@property (nonatomic,strong) RateViewBar *rateView;
-@property (nonatomic,strong) UILabel *rateView;
+@property (nonatomic,strong) RateViewBar *rateView;
 @property (nonatomic,strong) RateViewBar *rateLevelView;
 
 @property (nonatomic,strong) RightTitleLabel *driverLabel;
@@ -28,21 +34,20 @@
 @property (nonatomic,strong) UILabel *tipMessageLabel;
 @property (nonatomic,strong) PlaceHolderTextView *inputText;
 @property (nonatomic,strong) UIButton *buttonSubmit;
+
+@property (nonatomic,strong) JCTagView *JCView;
+
 @end
 
 @implementation AppraiseController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self initData];
-    [self initView];
+    contentString = @"";
     [self getDatas];
 }
 
-- (void) initData
-{
 
-}
 
 - (void) initView
 {
@@ -56,27 +61,24 @@
     
     _top_container = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     [_top_container setBackgroundColor:[UIColor whiteColor]];
-    [_top_container.layer setCornerRadius:5];
-    [_top_container.layer setMasksToBounds:YES];
     
     [self.view addSubview:_top_container];
     [_top_container mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(self.headerView.mas_bottom).offset(10);
-        make.left.equalTo(self.view).offset(10);
-        make.right.equalTo(self.view).offset(-10);
-        make.height.mas_equalTo(150);
+        make.top.equalTo(self.headerView.mas_bottom);
+        make.left.equalTo(self.view);
+        make.right.equalTo(self.view);
+        make.height.mas_equalTo(160);
     }];
     
     _bottom_container = [[UIView alloc] init];
     [_bottom_container setBackgroundColor:[UIColor whiteColor]];
-    [_bottom_container.layer setCornerRadius:5];
-    [_bottom_container.layer setMasksToBounds:YES];
+
     [self.view addSubview:_bottom_container];
     [_bottom_container mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.view).offset(10);
-        make.right.equalTo(self.view).offset(-10);
-        make.top.equalTo(_top_container.mas_bottom).offset(10);
-        make.bottom.equalTo(self.view).offset(-10);
+        make.left.equalTo(self.view);
+        make.right.equalTo(self.view);
+        make.top.equalTo(_top_container.mas_bottom).offset(5);
+        make.bottom.equalTo(self.view);
     }];
     
     _iconView =[[UIImageView alloc] init];
@@ -84,18 +86,18 @@
     [_top_container addSubview:_iconView];
     [_iconView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerX.equalTo(_top_container);
-        make.top.equalTo(_top_container).offset(15);
+        make.top.equalTo(_top_container).offset(20);
         make.height.width.mas_equalTo(50);
     }];
     
-//    _rateView = [[RateViewBar alloc] initWithFrame:CGRectMake(0, 0, 0, 0) light:@"icon_s_light_big" gray:@"icon_s_gray_big"];
-//    _rateView.rateNumber = 3;
-    _rateView = [[UILabel alloc] init];
-    [_rateView setText:@"星级:"];
-    [_rateView setFont:[UIFont systemFontOfSize:15]];
-    [_rateView setTextAlignment:NSTextAlignmentCenter];
+
+    _rateView = [[RateViewBar alloc] initWithFrame:CGRectMake(0, 0, 0, 0) light:@"huangxing" gray:@"huixing"];
+    [_rateLevelView setRateNumber:5];
+    [_rateLevelView setDragEnabled:NO];
+    [_rateLevelView setDelegate:self];
+    [_rateLevelView setImageSize:CGSizeMake(10, 10)];
+    [_bottom_container addSubview:_rateLevelView];
     [_top_container addSubview:_rateView];
-    
     [_rateView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_iconView.mas_bottom).offset(5);
         make.width.mas_equalTo(100);
@@ -105,24 +107,24 @@
     
     //司机信息
     _driverLabel = [[RightTitleLabel alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
-    [_driverLabel setTitle:@"称    呼"];
+    [_driverLabel setTitle:@"称    呼:"];
     [_driverLabel setContent:@" "];
     [_driverLabel setContentFont:[UIFont systemFontOfSize:15]];
     [_top_container addSubview:_driverLabel];
     [_driverLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(_top_container).offset(20);
+        make.centerX.equalTo(_top_container).offset(-25);
         make.top.equalTo(_rateView.mas_bottom).offset(5);
         make.height.mas_equalTo(20);
     }];
     
     //卡信息
     _carLabel =[[RightTitleLabel alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
-    [_carLabel setTitle:@"车牌号"];
+    [_carLabel setTitle:@"车牌号:"];
     [_carLabel setContent:@" "];
     [_carLabel setContentFont:[UIFont systemFontOfSize:15]];
     [_top_container addSubview:_carLabel];
     [_carLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(_top_container).offset(20);
+        make.centerX.equalTo(_top_container).offset(-25);
         make.top.equalTo(_driverLabel.mas_bottom).offset(5);
         make.height.mas_equalTo(20);
     }];
@@ -130,7 +132,7 @@
     
     //bottom_container content View
     _tipStarLabel = [[UILabel alloc] init];
-    [_tipStarLabel setText:@"拖动评星:"];
+    [_tipStarLabel setText:@"评星:"];
     [_tipStarLabel setFont:[UIFont systemFontOfSize:14]];
     [_bottom_container addSubview:_tipStarLabel];
     [_tipStarLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -142,17 +144,17 @@
     [_rateLevelView setRateNumber:5];
     [_rateLevelView setDragEnabled:YES];
     [_rateLevelView setDelegate:self];
-    [_rateLevelView setImageSize:CGSizeMake(50, 50)];
+    [_rateLevelView setImageSize:CGSizeMake(40, 40)];
     [_bottom_container addSubview:_rateLevelView];
     [_rateLevelView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_tipStarLabel.mas_bottom).offset(5);
         make.left.equalTo(_bottom_container).offset(20);
-        make.width.mas_equalTo(250);
-        make.height.mas_equalTo(50);
+        make.width.mas_equalTo(150);
+        make.height.mas_equalTo(30);
     }];
     
     
-    [_tipStarLabel setText:[NSString stringWithFormat:@"拖动评星:%0.1f",_rateLevelView.rateNumber]];
+    [_tipStarLabel setText:[NSString stringWithFormat:@"评星:"]];
     
     _tipMessageLabel = [[UILabel alloc] init];
     [_tipMessageLabel setText:@"说点什么:"];
@@ -162,6 +164,22 @@
         make.top.equalTo(_rateLevelView.mas_bottom).offset(5);
         make.left.equalTo(_bottom_container).offset(20);
     }];
+    
+    _JCView = [[JCTagView alloc]initWithFrame:CGRectMake(0, 5, SCREENWIDTH-40, 0)];
+    _JCView.delegate = self;
+    _JCView.JCSignalTagColor = [UIColor whiteColor];
+    _JCView.JCbackgroundColor = [UIColor clearColor];
+    NSLog(@"%@",contentArray);
+    [_JCView setArrayTagWithLabelArray:contentArray];
+    [_bottom_container addSubview:_JCView];
+    [_JCView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_tipMessageLabel.mas_bottom).offset(5);
+        make.left.equalTo(_bottom_container).offset(20);
+        make.right.equalTo(_bottom_container).offset(-20);
+        make.height.offset(_JCView.frame.size.height);
+    }];
+    
+    
     
     _inputText = [[PlaceHolderTextView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     _inputText.layer.cornerRadius = 5;
@@ -179,16 +197,16 @@
     _buttonSubmit.layer.masksToBounds = YES;
     [_buttonSubmit setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_buttonSubmit addTarget:self action:@selector(buttonTargetSumbit:) forControlEvents:UIControlEventTouchUpInside];
-    [_buttonSubmit setBackgroundImage:[ImageTools imageWithColor:[UIColor redColor]] forState:UIControlStateNormal];
+    [_buttonSubmit setBackgroundImage:[ImageTools imageWithColor:RGBHex(g_blue)] forState:UIControlStateNormal];
     [_bottom_container addSubview:_buttonSubmit];
     [_buttonSubmit mas_makeConstraints:^(MASConstraintMaker *make) {
         make.bottom.equalTo(_bottom_container).offset(-10);
         make.left.equalTo(_bottom_container).offset(30);
         make.right.equalTo(_bottom_container).offset(-30);
-        make.height.mas_equalTo(35);
+        make.height.mas_equalTo(50);
     }];
     [_inputText mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(_tipMessageLabel.mas_bottom).offset(5);
+        make.top.equalTo(_JCView.mas_bottom).offset(5);
         make.left.equalTo(_bottom_container).offset(20);
         make.right.equalTo(_bottom_container).offset(-20);
         make.bottom.equalTo(_buttonSubmit.mas_top).offset(-10);
@@ -199,8 +217,18 @@
         [_iconView sd_setCircleImageWithURL:[CommonUtility driverHeaderImageUrl:_orderModel.driverId] placeholderImage:[UIImage imageNamed:@"icon_driver"]];
         [_carLabel setContent:[NSString stringWithFormat:@"%@ %@",_orderModel.carNo,_orderModel.carDesc]];
         //[_rateView setRateNumber:[_orderModel.level floatValue]];
-        [_rateView setText:[NSString stringWithFormat:@"星级:%@",_orderModel.level?_orderModel.level:@""]];
+//        [_rateView setText:[NSString stringWithFormat:@"星级:%@",_orderModel.level?_orderModel.level:@""]];
+        [_rateView setRateNumber:[_orderModel.level floatValue]];
     }
+}
+-(void)buttonClick:(NSString *)str{
+    if ([contentString rangeOfString:str].location == NSNotFound) {
+        contentString = [NSString stringWithFormat:@"%@ %@",contentString,str];
+    }else{
+        contentString = [contentString stringByReplacingOccurrencesOfString:str withString:@""];
+    }
+    NSLog(@"%@",contentString);
+    
 }
 -(void)getDatas{
     NSDictionary *params = [[NSDictionary alloc]initWithObjectsAndKeys:@"34",@"typeId", nil];
@@ -208,7 +236,22 @@
     [HttpShareEngine callWithFormParams:params withMethod:@"listCancelReason" succ:^(NSDictionary *resultDictionary) {
         NSLog(@"%@",resultDictionary);
         NSArray *arr = [resultDictionary objectForKey:@"rows"];
-        
+        contentArray = [[NSMutableArray alloc]init];
+        for (int i = 0; i<arr.count; i++) {
+            [contentArray addObject:[arr[i] objectForKey:@"name"]];
+        }
+        [self initView];
+//        if (_JCView) {
+//            [_JCView setArrayTagWithLabelArray:contentArray];
+//            [_bottom_container addSubview:_JCView];
+//            [_JCView mas_makeConstraints:^(MASConstraintMaker *make) {
+//                make.top.equalTo(_tipMessageLabel.mas_bottom).offset(5);
+//                make.left.equalTo(_bottom_container).offset(20);
+//                make.right.equalTo(_bottom_container).offset(-20);
+//                make.height.offset(_JCView.frame.size.height);
+//            }];
+//            
+//        }
         
         
     } fail:^(NSInteger errorCode, NSString *errorMessage) {
@@ -253,7 +296,7 @@
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
     [params setObject:_orderModel.ids forKey:@"id"];
     [params setObject:[NSString stringWithFormat:@"%0.1f",_rateLevelView.rateNumber] forKey:@"level"];
-    [params setObject:_inputText.text forKey:@"description"];
+    [params setObject:[NSString stringWithFormat:@"%@%@",contentString,_inputText.text] forKey:@"description"];
     
 //    NSLog(@"%@",params);
 //    return;
@@ -277,7 +320,7 @@
 
 - (void) rateChangeValue:(CGFloat)value view:(UIView *)view
 {
-    [_tipStarLabel setText:[NSString stringWithFormat:@"拖动评星:%0.1f",value]];
+    [_tipStarLabel setText:[NSString stringWithFormat:@"评星:"]];
 }
 
 @end

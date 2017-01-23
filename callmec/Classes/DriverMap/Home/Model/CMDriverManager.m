@@ -60,8 +60,10 @@
     [params setObject:@"1000" forKey:@"distance"];
     [params setObject:[NSString stringWithFormat:@"%f",c2d.longitude] forKey:@"longitude"];
     [params setObject:[NSString stringWithFormat:@"%f",c2d.latitude] forKey:@"latitude"];
+    NSLog(@"%@",params);
     
     [CMDriver fetchDriverWithCoordinate:params succed:^(NSArray *result, int pageCount, int recordCount) {
+        NSLog(@"%@,%d,%d",result,pageCount,recordCount);
         NSMutableArray *dataArray = [NSMutableArray array];
         for (NSDictionary *dict in result) {
             DriverInfoModel *model = [[DriverInfoModel alloc] initWithDictionary:dict error:nil];

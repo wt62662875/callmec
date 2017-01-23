@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11542" systemVersion="16B2555" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11524"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="chooseLineViewController">
             <connections>
                 <outlet property="collectionView" destination="E6h-F8-m5h" id="0LF-9q-pIp"/>
+                <outlet property="serchBtn" destination="VCE-By-C3L" id="2BM-Qs-I2A"/>
+                <outlet property="serchTextField" destination="ib0-N5-DCy" id="iJs-bi-Lgg"/>
+                <outlet property="serchView" destination="bDB-4Q-Xhi" id="fXU-Jg-KVU"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
         </placeholder>
@@ -21,7 +24,7 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="E6h-F8-m5h">
-                    <rect key="frame" x="0.0" y="44" width="375" height="623"/>
+                    <rect key="frame" x="0.0" y="94" width="375" height="573"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="JtT-fF-IO8">
                         <size key="itemSize" width="50" height="50"/>
@@ -34,16 +37,74 @@
                         <outlet property="delegate" destination="-1" id="s8G-EE-OLy"/>
                     </connections>
                 </collectionView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="P26-Ue-RSe">
+                    <rect key="frame" x="0.0" y="64" width="375" height="50"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VCE-By-C3L">
+                            <rect key="frame" x="300" y="10" width="65" height="30"/>
+                            <color key="backgroundColor" red="0.4392156862745098" green="0.75294117647058822" blue="0.96862745098039216" alpha="1" colorSpace="calibratedRGB"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="65" id="hDf-1C-rtG"/>
+                            </constraints>
+                            <state key="normal" title="搜索">
+                                <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </state>
+                            <connections>
+                                <action selector="serchClick:" destination="-1" eventType="touchUpInside" id="FRi-Ds-kwA"/>
+                            </connections>
+                        </button>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bDB-4Q-Xhi">
+                            <rect key="frame" x="10" y="10" width="280" height="30"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="sousuo.png" translatesAutoresizingMaskIntoConstraints="NO" id="jk1-Ix-S5j">
+                                    <rect key="frame" x="8" y="10" width="10" height="10"/>
+                                </imageView>
+                                <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="ib0-N5-DCy">
+                                    <rect key="frame" x="26" y="0.0" width="254" height="30"/>
+                                    <nil key="textColor"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                    <textInputTraits key="textInputTraits"/>
+                                </textField>
+                            </subviews>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstItem="jk1-Ix-S5j" firstAttribute="leading" secondItem="bDB-4Q-Xhi" secondAttribute="leading" constant="8" id="4kg-Qj-50k"/>
+                                <constraint firstAttribute="trailing" secondItem="ib0-N5-DCy" secondAttribute="trailing" id="Pih-Pv-tPc"/>
+                                <constraint firstItem="ib0-N5-DCy" firstAttribute="leading" secondItem="jk1-Ix-S5j" secondAttribute="trailing" constant="8" id="QLD-6i-asr"/>
+                                <constraint firstAttribute="bottom" secondItem="ib0-N5-DCy" secondAttribute="bottom" id="T1F-za-lld"/>
+                                <constraint firstItem="jk1-Ix-S5j" firstAttribute="centerY" secondItem="bDB-4Q-Xhi" secondAttribute="centerY" id="Zc3-d0-EGJ"/>
+                                <constraint firstItem="ib0-N5-DCy" firstAttribute="top" secondItem="bDB-4Q-Xhi" secondAttribute="top" id="kPH-IS-tUa"/>
+                            </constraints>
+                        </view>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstItem="VCE-By-C3L" firstAttribute="top" secondItem="P26-Ue-RSe" secondAttribute="top" constant="10" id="EaQ-qs-20i"/>
+                        <constraint firstAttribute="height" constant="50" id="JA9-tY-bCk"/>
+                        <constraint firstAttribute="bottom" secondItem="bDB-4Q-Xhi" secondAttribute="bottom" constant="10" id="KUz-53-u4i"/>
+                        <constraint firstItem="bDB-4Q-Xhi" firstAttribute="leading" secondItem="P26-Ue-RSe" secondAttribute="leading" constant="10" id="RVq-SA-tyy"/>
+                        <constraint firstAttribute="trailing" secondItem="VCE-By-C3L" secondAttribute="trailing" constant="10" id="YK0-r9-eVg"/>
+                        <constraint firstAttribute="bottom" secondItem="VCE-By-C3L" secondAttribute="bottom" constant="10" id="aa8-Nc-PGE"/>
+                        <constraint firstItem="VCE-By-C3L" firstAttribute="leading" secondItem="bDB-4Q-Xhi" secondAttribute="trailing" constant="10" id="pEq-Iz-aGw"/>
+                        <constraint firstItem="bDB-4Q-Xhi" firstAttribute="top" secondItem="P26-Ue-RSe" secondAttribute="top" constant="10" id="s4P-5k-83R"/>
+                    </constraints>
+                </view>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="E6h-F8-m5h" secondAttribute="bottom" id="6W7-SQ-eKi"/>
-                <constraint firstItem="E6h-F8-m5h" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="44" id="N5x-8T-TlT"/>
+                <constraint firstItem="P26-Ue-RSe" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="64" id="RAl-U9-pTg"/>
+                <constraint firstAttribute="trailing" secondItem="P26-Ue-RSe" secondAttribute="trailing" id="ae3-vl-0Lb"/>
+                <constraint firstItem="P26-Ue-RSe" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="eW4-ad-W1T"/>
                 <constraint firstItem="E6h-F8-m5h" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="giP-wC-coy"/>
                 <constraint firstAttribute="trailing" secondItem="E6h-F8-m5h" secondAttribute="trailing" id="pQa-94-G2m"/>
+                <constraint firstItem="E6h-F8-m5h" firstAttribute="top" secondItem="P26-Ue-RSe" secondAttribute="bottom" constant="-20" id="uTw-I3-rYj"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <point key="canvasLocation" x="63.5" y="139.5"/>
         </view>
     </objects>
+    <resources>
+        <image name="sousuo.png" width="10" height="10"/>
+    </resources>
 </document>

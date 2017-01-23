@@ -27,6 +27,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(HttpAFNetworkEngine)
                onError:(QueryErrorBlock)errorBlock
 {
     AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    ((AFJSONResponseSerializer *)manager.responseSerializer).removesKeysWithNullValues = YES;//去掉null字段
+
     manager.requestSerializer = [AFJSONRequestSerializer serializer];
     // 将字典的类型的数据转化为
  
@@ -35,6 +37,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(HttpAFNetworkEngine)
     
     NSSet *mContentTypeSet = [NSSet setWithObjects:@"text/html",@"application/json",@"text/javascript",nil];
     manager.responseSerializer.acceptableContentTypes = mContentTypeSet;
+    manager.securityPolicy = [AFSecurityPolicy defaultPolicy];
+    
+    manager.securityPolicy.allowInvalidCertificates = YES;//忽略https证书
+    
+    manager.securityPolicy.validatesDomainName = NO;//是否验证域名
     [manager.requestSerializer setQueryStringSerializationWithBlock:^NSString *(NSURLRequest *request, NSDictionary *parameters, NSError *__autoreleasing *error) {
         return infoParamsJson;
     }];
@@ -78,6 +85,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(HttpAFNetworkEngine)
                    onError:(QueryErrorBlock)errorBlock
 {
     AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    ((AFJSONResponseSerializer *)manager.responseSerializer).removesKeysWithNullValues = YES;//去掉null字段
+
     manager.requestSerializer = [AFJSONRequestSerializer serializer];
     // 将字典的类型的数据转化为
     NSMutableDictionary *tmp = [NSMutableDictionary dictionaryWithDictionary:params];
@@ -98,6 +107,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(HttpAFNetworkEngine)
     NSLog(@"%@",infoParamsJson);
     NSSet *mContentTypeSet = [NSSet setWithObjects:@"text/html",@"application/json",@"text/javascript",nil];
     manager.responseSerializer.acceptableContentTypes = mContentTypeSet;
+    manager.securityPolicy = [AFSecurityPolicy defaultPolicy];
+    
+    manager.securityPolicy.allowInvalidCertificates = YES;//忽略https证书
+    
+    manager.securityPolicy.validatesDomainName = NO;//是否验证域名
     [manager.requestSerializer setQueryStringSerializationWithBlock:^NSString *(NSURLRequest *request, NSDictionary *parameters, NSError *__autoreleasing *error) {
         return infoParamsJson;
     }];
@@ -127,9 +141,16 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(HttpAFNetworkEngine)
                    onError:(QueryErrorBlock)errorBlock
 {
     AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    ((AFJSONResponseSerializer *)manager.responseSerializer).removesKeysWithNullValues = YES;//去掉null字段
+
     manager.requestSerializer = [AFJSONRequestSerializer serializer];
     NSSet *mContentTypeSet = [NSSet setWithObjects:@"text/html",@"application/json",@"text/javascript",nil];
     manager.responseSerializer.acceptableContentTypes = mContentTypeSet;
+    manager.securityPolicy = [AFSecurityPolicy defaultPolicy];
+    
+    manager.securityPolicy.allowInvalidCertificates = YES;//忽略https证书
+    
+    manager.securityPolicy.validatesDomainName = NO;//是否验证域名
     if (serviceUrl) {
         serviceUrl =[serviceUrl stringByAppendingString:@"?"];
         for (NSString *key in params) {

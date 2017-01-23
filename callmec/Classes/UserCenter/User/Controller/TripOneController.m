@@ -180,7 +180,7 @@
             praise.orderModel = sender;
             praise.delegateCallback = self;
             [self.navigationController pushViewController:praise animated:YES];
-        }else if ([@"2" isEqualToString:order.state]||[@"3" isEqualToString:order.state]||[@"4" isEqualToString:order.state]||[@"5" isEqualToString:order.state])
+        }else if ([@"1" isEqualToString:order.state]||[@"2" isEqualToString:order.state]||[@"3" isEqualToString:order.state]||[@"4" isEqualToString:order.state]||[@"5" isEqualToString:order.state])
         {
             WaitDriverController *order_ctrl = [[WaitDriverController alloc] init];
             order_ctrl.orderId = order.ids;

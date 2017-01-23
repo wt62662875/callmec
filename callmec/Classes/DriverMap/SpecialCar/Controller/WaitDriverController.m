@@ -953,6 +953,9 @@ static BOOL WaitDriverController_HASVISIABLE = NO;
                 _model = [CarOrderModel convertDriverModel:order];
                 [_notice_container setModel:_model];
                 [self updateNoticeView:_model];
+            }else if([@"-1" isEqualToString:order.state]){
+                [MBProgressHUD showAndHideWithMessage:@"司机已取消订单" forHUD:nil];
+                [self.navigationController popToRootViewControllerAnimated:YES];
             }
         }
     }

@@ -98,7 +98,7 @@
 - (void) setIconUrl:(NSString *)iconUrl
 {
     _iconUrl = iconUrl;
-    if (_iconUrl && [_iconUrl hasPrefix:@"http"]) {
+    if (_iconUrl && [_iconUrl hasPrefix:@"https"]) {
         [_iconView sd_setImageWithURL:[NSURL URLWithString:_iconUrl] placeholderImage:[UIImage imageNamed:@"icon_pay_1"]];
     }else{
         [_iconView setImage:[UIImage imageNamed:_iconUrl]];

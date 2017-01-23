@@ -22,12 +22,22 @@
 }
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 
+@property (weak, nonatomic) IBOutlet UIButton *serchBtn;
+@property (weak, nonatomic) IBOutlet UIView *serchView;
+@property (weak, nonatomic) IBOutlet UITextField *serchTextField;
+
 @end
 
 @implementation chooseLineViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    _serchBtn.layer.cornerRadius = 5;
+    _serchBtn.layer.masksToBounds = YES;
+    _serchView.layer.borderColor = RGB(230, 230, 230).CGColor;
+    _serchView.layer.borderWidth = 1;
+    _serchView.layer.cornerRadius = 5;
+    
     [_collectionView registerNib:[UINib nibWithNibName:@"collectionCell" bundle:nil] forCellWithReuseIdentifier:@"collectionCell"];
     [_collectionView registerNib:[UINib nibWithNibName:@"headCollectionReusableView" bundle:nil] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"headCollectionReusableView"];
     
@@ -49,6 +59,63 @@
         [self initLocationConfig];
         [self getdatas];
     }];
+}
+- (IBAction)serchClick:(id)sender {
+    [_serchTextField resignFirstResponder];
+    NSLog(@"%@",datasArray);
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    [params setObject:_serchTextField.text forKey:@"name"];
+    if (_serchTextField.text.length<=1) {
+        [MBProgressHUD showAndHideWithMessage:@"抱歉,你搜索的地点没有车辆···" forHUD:nil];
+    }else{
+        [HttpShareEngine callWithFormParams:params withMethod:@"listLine" succ:^(NSDictionary *resultDictionary) {
+            NSLog(@"%@",resultDictionary);
+            NSArray *tempArr = [resultDictionary objectForKey:@"rows"];
+            if (tempArr.count == 0) {
+                [MBProgressHUD showAndHideWithMessage:@"抱歉,你搜索的地点没有车辆···" forHUD:nil];
+            }else{
+                [self serchAdd:_serchTextField.text];
+                
+                
+                [self.delegate sendLine:_serchTextField.text end:@""];
+                [self.navigationController popViewControllerAnimated:YES];
+            }
+            
+            
+            [_collectionView reloadData];
+        } fail:^(NSInteger errorCode, NSString *errorMessage) {
+            [MBProgressHUD showAndHideWithMessage:errorMessage forHUD:nil];
+        }];
+    }
+}
+//搜索记录增加变更
+-(void)serchAdd:(NSString *)sender{
+    if (![USERDEFAULTS objectForKey:@"SearchHistory"]) {
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc]initWithObjectsAndKeys:@"历史搜索",@"shortName",[[NSMutableArray alloc]initWithObjects:[[NSMutableDictionary alloc] initWithObjectsAndKeys:sender,@"shortName", nil], nil],@"children", nil];
+        [USERDEFAULTS setObject:dic forKey:@"SearchHistory"];
+    }else{
+        NSMutableArray *tempArr = [[[USERDEFAULTS objectForKey:@"SearchHistory"] objectForKey:@"children"] mutableCopy];
+        NSMutableArray *temp = [[NSMutableArray alloc]init];
+        for (int n = 0; n<tempArr.count; n++) {
+            [temp addObject:[tempArr[n] objectForKey:@"shortName"]];
+        }
+        if ([temp containsObject:sender]) {
+            [temp removeObject:sender];
+            [temp insertObject:sender atIndex:0];
+        }else{
+            [temp insertObject:sender atIndex:0];
+        }
+        if (temp.count >6) {
+            [temp removeLastObject];
+        }
+        NSMutableArray *array = [[NSMutableArray alloc]init];
+        for (int i = 0; i<temp.count; i++) {
+            [array addObject:[[NSMutableDictionary alloc] initWithObjectsAndKeys:temp[i],@"shortName", nil]];
+        }
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc]initWithObjectsAndKeys:@"历史搜索",@"shortName",array,@"children", nil];
+        [USERDEFAULTS setObject:dic forKey:@"SearchHistory"];
+    }
+    NSLog(@"%@",[USERDEFAULTS objectForKey:@"SearchHistory"]);
 }
 - (void) amapLocationManager:(AMapLocationManager *)manager didUpdateLocation:(CLLocation *)location
 {
@@ -118,7 +185,12 @@
             [tempArray addObject:tempDic];
         }
         NSMutableDictionary * tempDic = [[NSMutableDictionary alloc]initWithObjectsAndKeys:[NSString stringWithFormat:@"当前城市-%@",[GlobalData sharedInstance].city],@"shortName",tempArray ,@"children",nil];
-        [datasArray insertObject:tempDic atIndex:0];
+        if ([USERDEFAULTS objectForKey:@"SearchHistory"]) {
+            [datasArray insertObject:tempDic atIndex:1];
+        }else{
+            [datasArray insertObject:tempDic atIndex:0];
+        }
+        
         NSLog(@"%@",datasArray);
 
         [_collectionView reloadData];
@@ -133,6 +205,9 @@
         NSLog(@"%@",resultDictionary);
         NSArray *resultArray = [resultDictionary objectForKey:@"rows"];
         datasArray = [[NSMutableArray alloc]init];
+        if ([USERDEFAULTS objectForKey:@"SearchHistory"]) {
+            [datasArray addObject:[USERDEFAULTS objectForKey:@"SearchHistory"]];
+        }
 
         for (int i = 0; i<resultArray.count; i++) {
             [datasArray addObject:resultArray[i]];
@@ -173,17 +248,40 @@
 }
 //选择cell时
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-    if (indexPath.section == 0 && ([GlobalData sharedInstance].city.length > 0) && ![datasArray[0] objectForKey:@"id"]) {
-        if ([_startOrEnd isEqualToString:@"start"]) {
+    
+    if ([USERDEFAULTS objectForKey:@"SearchHistory"]) {
+        if (indexPath.section == 0) {
+            [self serchAdd:[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"]];
             [self.delegate sendLine:[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"] end:@""];
             [self.navigationController popViewControllerAnimated:YES];
         }else{
-            [self checkLine:_startLine endLine:[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"]];
+            if (indexPath.section == 1 && ([GlobalData sharedInstance].city.length > 0) && ![datasArray[1] objectForKey:@"id"]) {
+                if ([_startOrEnd isEqualToString:@"start"]) {
+                    [self.delegate sendLine:[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"] end:@""];
+                    [self.navigationController popViewControllerAnimated:YES];
+                }else{
+                    [self checkLine:_startLine endLine:[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"]];
+                }
+            }else{
+                [self nextDatas:@"" departmentId:[NSString stringWithFormat:@"%@",[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"id"]]];
+                
+            }
+
         }
     }else{
-        [self nextDatas:@"" departmentId:[NSString stringWithFormat:@"%@",[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"id"]]];
-        
+        if (indexPath.section == 0 && ([GlobalData sharedInstance].city.length > 0) && ![datasArray[0] objectForKey:@"id"]) {
+            if ([_startOrEnd isEqualToString:@"start"]) {
+                [self.delegate sendLine:[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"] end:@""];
+                [self.navigationController popViewControllerAnimated:YES];
+            }else{
+                [self checkLine:_startLine endLine:[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"shortName"]];
+            }
+        }else{
+            [self nextDatas:@"" departmentId:[NSString stringWithFormat:@"%@",[[datasArray[indexPath.section] objectForKey:@"children"][indexPath.row] objectForKey:@"id"]]];
+            
+        }
     }
+
     
 }
 -(void)nextDatas:(NSString *)name departmentId:(NSString *)departmentId{

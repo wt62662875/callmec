@@ -41,12 +41,12 @@
     }];
     
     _contentLabel = [[UILabel alloc] init];
-    [_contentLabel setFont:[UIFont systemFontOfSize:15]];
+    [_contentLabel setFont:[UIFont systemFontOfSize:12]];
     [_contentLabel setLineBreakMode:NSLineBreakByCharWrapping];
     [_contentLabel setNumberOfLines:0];
     [self addSubview:_contentLabel];
     [_contentLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(_titleLabel.mas_right).offset(10);
+        make.left.equalTo(_titleLabel.mas_right);
         make.centerY.equalTo(self);
         make.right.equalTo(self);
     }];

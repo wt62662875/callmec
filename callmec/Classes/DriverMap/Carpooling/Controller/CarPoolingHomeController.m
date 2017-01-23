@@ -52,6 +52,7 @@
 #import "chooseEndAddressViewController.h"
 #import "MyTimePickerView.h"
 #import "MyTimeTool.h"
+#import "chooseEndLineViewController.h"
 
 //#import "<#header#>"
 #define kSetingViewHeight 215
@@ -1044,6 +1045,9 @@ CMLocationViewDelegate,UITableViewDataSource,UITableViewDelegate,CellTargetDeleg
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    BaseModel *model;
+    model = _dataArray[indexPath.section];
+    [self cellTarget:model];
 }
 
 #pragma mark - cellDelegate
@@ -1171,7 +1175,7 @@ CMLocationViewDelegate,UITableViewDataSource,UITableViewDelegate,CellTargetDeleg
 - (void) initTableCenterView
 {
     UIImageView *imageView = [[UIImageView alloc]init];
-    [imageView sd_setImageWithURL:[NSURL URLWithString:@"http://work.huwochuxing.com/getArticle?id=112"] placeholderImage:[UIImage imageNamed:@"beijing"]];
+    [imageView sd_setImageWithURL:[NSURL URLWithString:@"https://work.huwochuxing.com/getArticle?id=112"] placeholderImage:[UIImage imageNamed:@"beijing"]];
     [self.view addSubview:imageView];
     [imageView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.view);
@@ -1400,17 +1404,23 @@ CMLocationViewDelegate,UITableViewDataSource,UITableViewDelegate,CellTargetDeleg
     [self initLocationConfig];
 }
 -(void)chooseLineClick:(UIButton *)sender{
-    chooseLineViewController *chooseLineVC = [[chooseLineViewController alloc]initWithNibName:@"chooseLineViewController" bundle:nil];
     if (sender == _startLineButton) {
+        chooseLineViewController *chooseLineVC = [[chooseLineViewController alloc]initWithNibName:@"chooseLineViewController" bundle:nil];
         NSLog(@"_startLineButton");
         [chooseLineVC setStartOrEnd:@"start"];
+        chooseLineVC.delegate = self;
+        [self.navigationController pushViewController:chooseLineVC animated:YES];
     }else if(sender == _endLineButton){
-        NSLog(@"_endLineButton");
-        [chooseLineVC setStartOrEnd:@"end"];
-        [chooseLineVC setStartLine:_startLineButton.titleLabel.text];
+        if ([_startLineButton.titleLabel.text isEqualToString:@"选择出发地"]) {
+            [MBProgressHUD showAndHideWithMessage:@"请选择出发地!" forHUD:nil];
+        }else{
+            chooseEndLineViewController *endLineVC = [[chooseEndLineViewController alloc]initWithNibName:@"chooseEndLineViewController" bundle:nil];
+            NSLog(@"_endLineButton");
+            [endLineVC setStartLine:_startLineButton.titleLabel.text];
+            [self.navigationController pushViewController:endLineVC animated:YES];
+        }
     }
-    chooseLineVC.delegate = self;
-    [self.navigationController pushViewController:chooseLineVC animated:YES];
+
 
 }
 -(void)zhuanhuanClick:(id)sender{

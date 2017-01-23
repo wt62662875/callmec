@@ -1,18 +1,18 @@
 {
-  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "d41ec12f-28fd-4d3f-be65-af76b72055dd++7348",
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "D4CA3452D637F7F718973226BFC6D22AA63B1A26",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
-    "d41ec12f-28fd-4d3f-be65-af76b72055dd++7348" : {
+    "D4CA3452D637F7F718973226BFC6D22AA63B1A26" : {
       "DVTSourceControlWorkingCopyRepositoryBranchesLocationKey" : "callme_ios\/branches",
       "DVTSourceControlWorkingCopyRepositoryTagsLocationKey" : "callme_ios\/tags",
       "DVTSourceControlWorkingCopyRepositoryPrimaryBranchLocationKey" : "callme_ios\/trunk"
     }
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
-    "d41ec12f-28fd-4d3f-be65-af76b72055dd++7348" : 9223372036854775807
+    "D4CA3452D637F7F718973226BFC6D22AA63B1A26" : 9223372036854775807
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "23225E6F-626D-4524-B5E1-7CAA9D3677CB",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
-    "d41ec12f-28fd-4d3f-be65-af76b72055dd++7348" : "callmec\/"
+    "D4CA3452D637F7F718973226BFC6D22AA63B1A26" : "callmec\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "callmec",
   "DVTSourceControlWorkspaceBlueprintVersion" : 204,
@@ -21,7 +21,7 @@
     {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "http:\/\/115.29.202.163\/svn",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
-      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "d41ec12f-28fd-4d3f-be65-af76b72055dd++7348"
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "D4CA3452D637F7F718973226BFC6D22AA63B1A26"
     }
   ]
 }

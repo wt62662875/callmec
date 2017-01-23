@@ -52,6 +52,13 @@
 @property (nonatomic,copy) NSString<Optional>* payType;
 @property (nonatomic,copy) NSString<Optional>* startDate;
 
+@property (nonatomic,copy) NSString<Optional>* appointDate;
+@property (nonatomic,copy) NSString<Optional>* lineName;
+@property (nonatomic,copy) NSString<Optional>* orderPerson;
+@property (nonatomic,copy) NSString<Optional>* otherFee;
+@property (nonatomic,copy) NSString<Optional>* descriptions;
+
+
 + (void) fetchOrderListById:(NSString*)ids types:(NSString*)type page:(NSInteger)page succes:(QuerySuccessListBlock)suc failed:(QueryErrorBlock)fail;
 
 + (void) submitComment:(NSMutableDictionary*)params succes:(QuerySuccessBlock)suc failed:(QueryErrorBlock)fail;

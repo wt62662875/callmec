@@ -26,7 +26,7 @@
 + (void) callTelphone:(NSString*)number;
 + (void) sendMessage:(NSString*)number;
 
-+ (NSString*) getArticalUrl:(NSString*)ids;
++ (NSString*) getArticalUrl:(NSString*)ids type:(NSString *)type;
 
 + (NSString*) convertDateToString:(NSDate*)date;
 

@@ -170,7 +170,7 @@
     }else if(sender == self.rightButton)
     {
         BrowerController *webview = [[BrowerController alloc] init];
-        webview.urlStr = [CommonUtility getArticalUrl:@"4"];
+        webview.urlStr = [CommonUtility getArticalUrl:@"4" type:@"4"];
         webview.titleStr = @"计价说明";
         [self.navigationController pushViewController:webview animated:YES];
     }else if([sender isKindOfClass:[LeftInputView class]]){

@@ -483,7 +483,7 @@
 {
     [AppVersionModel checkAppVersionWithSucess:^(NSDictionary *resultDictionary) {
         NSLog(@"checkVersion resultDictionary:%@",resultDictionary);
-        if ([[[resultDictionary objectForKey:@"data"] objectForKey:@"newVersoin"] intValue] != 0) {
+        if ([[[resultDictionary objectForKey:@"data"] objectForKey:@"newVersion"] intValue] != 0) {
             AppVersionModel *model = [[AppVersionModel alloc] initWithDictionary:resultDictionary[@"data"] error:nil];
             [self showAlertMessage:@"升级提示" withTitle:model.descriptions bOne:@"稍后升级" bTwo:@"马上升级" withHandler:^{
                 [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"itms-apps://itunes.apple.com/app/id1148376316"]];

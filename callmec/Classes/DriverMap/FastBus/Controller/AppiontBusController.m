@@ -133,7 +133,7 @@
         }
     }else if(sender == self.rightButton){
         BrowerController *webview = [[BrowerController alloc] init];
-        webview.urlStr = [CommonUtility getArticalUrl:@"4"];
+        webview.urlStr = [CommonUtility getArticalUrl:@"4" type:@"3"];
         webview.titleStr = @"计价说明";
         [self.navigationController pushViewController:webview animated:YES];
     }else if(sender == self.buttonSubmit){

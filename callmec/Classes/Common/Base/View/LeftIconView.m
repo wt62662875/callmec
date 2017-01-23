@@ -93,11 +93,12 @@
 - (void) setImageUrl:(NSString *)imageUrl
 {
     _imageUrl = imageUrl;
-    if (_imageUrl && [_imageUrl hasPrefix:@"http://"]) {
+    if (_imageUrl && [_imageUrl hasPrefix:@"https://"]) {
         [_leftIcon sd_setCircleImageWithURL:_imageUrl placeholderImage:[UIImage imageNamed:@"icon_driver"]];
     }else{
         [_leftIcon setImage:[UIImage imageNamed:_imageUrl]];
     }
+    NSLog(@"%@",imageUrl);
     
 }
 

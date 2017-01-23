@@ -193,12 +193,12 @@ static NSDateFormatter *formater;
 /*@!
     获取使用指南WebView  1 使用指南 2 法律条款  3 版本信息  4计价说明  5注册司机服务条款
  */
-+ (NSString*) getArticalUrl:(NSString*)ids
++ (NSString*) getArticalUrl:(NSString*)ids type:(NSString *)type
 {
-    return [NSString stringWithFormat:@"%@getArticle?id=%@&token=%@",
+    return [NSString stringWithFormat:@"%@getArticle?id=%@&token=%@&latitude=%@&longitude=%@&type=%@",
                     kserviceURL,
                     ids,
-                    [GlobalData sharedInstance].user.session];
+                    [GlobalData sharedInstance].user.session,[NSString stringWithFormat:@"%f",[GlobalData sharedInstance].location.coordinate.latitude],[NSString stringWithFormat:@"%f",[GlobalData sharedInstance].location.coordinate.longitude],type];
 }
 
 
