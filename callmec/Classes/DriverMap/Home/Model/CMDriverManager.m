@@ -58,6 +58,9 @@
     [params setObject:type?type:@"1" forKey:@"type"];
     [params setObject:@"1" forKey:@"state"];
     [params setObject:@"1000" forKey:@"distance"];
+    [params setObject:@"1" forKey:@"passed"];
+    [params setObject:@"1" forKey:@"ready"];
+
     [params setObject:[NSString stringWithFormat:@"%f",c2d.longitude] forKey:@"longitude"];
     [params setObject:[NSString stringWithFormat:@"%f",c2d.latitude] forKey:@"latitude"];
     NSLog(@"%@",params);
