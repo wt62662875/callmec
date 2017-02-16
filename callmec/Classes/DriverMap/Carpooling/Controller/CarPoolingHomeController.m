@@ -1817,7 +1817,7 @@ CMLocationViewDelegate,UITableViewDataSource,UITableViewDelegate,CellTargetDeleg
 
 -(NSArray *)validHourArray{
     int startIndex = [MyTimeTool currentDateHour];
-    if ([MyTimeTool currentDateMinute] >= 50) startIndex++;
+    if ([MyTimeTool currentDateMinute] >= 40) startIndex++;
     if (startIndex>=HOURARRAY.count) {
         startIndex = 0;
     }
@@ -1825,8 +1825,8 @@ CMLocationViewDelegate,UITableViewDataSource,UITableViewDelegate,CellTargetDeleg
 }
 
 -(NSArray *)validMinuteArray{
-    int startIndex = [MyTimeTool currentDateMinute] / 10 +1;
-    if ([MyTimeTool currentDateMinute] >= 50) startIndex = 0;
+    int startIndex = [MyTimeTool currentDateMinute] / 10 +2;
+    if ([MyTimeTool currentDateMinute] >= 40) startIndex = 1;
     return [MINUTEARRAY subarrayWithRange:NSMakeRange(startIndex, MINUTEARRAY.count - startIndex)];
 }
 -(NSArray *)formatOriArray:(NSArray *)oriArray{

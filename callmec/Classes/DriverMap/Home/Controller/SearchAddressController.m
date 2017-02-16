@@ -53,9 +53,11 @@
     // Do any additional setup after loading the view.
     _isLocated= NO;
     self.view.backgroundColor = [UIColor whiteColor];
-//    if (!_city || [_city length]==0) {
-//        [self initLocationConfig];
-//    }
+    if (!_city || [_city length]==0) {
+        [self initLocationConfig];
+    }
+
+    NSLog(@"%@",_city);
     [self initSearchBar];
     [self initSearchDisplay];
     NSLog(@"%d",_targetId);
@@ -86,7 +88,7 @@
                                                                                     CMLocation *clocation,
                                                                                     NSError *error)
         {
-            NSLog(@"clocation:%@",clocation);
+            NSLog(@"clocation:%@",clocation.city);
             _isLocated = YES;
             [GlobalData sharedInstance].city =clocation.city;
             _city = clocation.city;
@@ -242,6 +244,7 @@
         NSString *citys = self.city?self.city:[GlobalData sharedInstance].city;
         request.city = citys?[citys stringByReplacingOccurrencesOfString:@"市" withString:@""]:@"";
     }
+    NSLog(@"city===%@",self.city);
     
     __weak __typeof(&*self) weakSelf = self;
     [[CMSearchManager sharedInstance] searchForRequest:request completionBlock:^(id request, id response, NSError *error) {

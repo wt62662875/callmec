@@ -31,9 +31,11 @@ typedef void (^DownloadFail)(NSInteger code,NSString *message);
 typedef void(^buttonTaget)(NSString *sender);
 #define kclient_id  @"2"
 
-#define kserviceURL_Test @"https://work.huwochuxing.com/"
+#define kserviceURL_Test @"https://test.huwochuxing.com/"
 /*kserviceBase @"/app.php"*/
 #define kserviceURL @"https://work.huwochuxing.com/"
+//#define kserviceURL @"https://test.huwochuxing.com/"
+
 /*kserviceBase @"/app.php"*/
 
 

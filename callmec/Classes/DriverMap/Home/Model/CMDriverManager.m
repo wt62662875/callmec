@@ -57,7 +57,7 @@
     [params setObject:[GlobalData sharedInstance].user.session forKey:@"token"];
     [params setObject:type?type:@"1" forKey:@"type"];
     [params setObject:@"1" forKey:@"state"];
-    [params setObject:@"1000" forKey:@"distance"];
+    [params setObject:@"2" forKey:@"distance"];
     [params setObject:@"1" forKey:@"passed"];
     [params setObject:@"1" forKey:@"ready"];
 
@@ -67,6 +67,7 @@
     
     [CMDriver fetchDriverWithCoordinate:params succed:^(NSArray *result, int pageCount, int recordCount) {
         NSLog(@"%@,%d,%d",result,pageCount,recordCount);
+
         NSMutableArray *dataArray = [NSMutableArray array];
         for (NSDictionary *dict in result) {
             DriverInfoModel *model = [[DriverInfoModel alloc] initWithDictionary:dict error:nil];

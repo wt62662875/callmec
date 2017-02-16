@@ -21,6 +21,7 @@
     
     [params setObject:@(type) forKey:@"searchRange"];
     
+    NSLog(@"%@",params);
     [HttpShareEngine callWithFormParams:params withMethod:@"listGrade" succList:^(NSArray *result, int pageCount, int recordCount) {
         if (succes) {
             succes(result,pageCount,recordCount);

@@ -134,7 +134,7 @@
     }else{
         _dataArray =[NSMutableArray array];
     }
-    [IntegrateModel fetchIntegrateList:_page type:1 accountId:_accountId success:^(NSArray *result, int pageCount, int recordCount) {
+    [IntegrateModel fetchIntegrateList:_page type:12 accountId:_accountId success:^(NSArray *result, int pageCount, int recordCount) {
         NSLog(@"result:%@",result);
         for (NSDictionary *dict in result) {
             IntegrateModel *model = [[IntegrateModel alloc] initWithDictionary:dict error:nil];
@@ -150,7 +150,7 @@
 
 - (void) fetchMoreData
 {
-    [IntegrateModel fetchIntegrateList:_page type:1 accountId:_accountId success:^(NSArray *result, int pageCount, int recordCount) {
+    [IntegrateModel fetchIntegrateList:_page type:12 accountId:_accountId success:^(NSArray *result, int pageCount, int recordCount) {
         NSLog(@"result:%@",result);
         for (NSDictionary *dict in result) {
             IntegrateModel *model = [[IntegrateModel alloc] initWithDictionary:dict error:nil];

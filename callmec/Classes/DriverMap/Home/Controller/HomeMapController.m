@@ -32,21 +32,40 @@
 #import "PayOrderController.h"          //支付页面
 #import "WaitDriverController.h"        //专车等待页面
 
-
+#import "helpViewController.h"
+#import "setUpViewController.h"
+#import "WalletController.h"
+#import "OrderListController.h"
 #import "VerticalView.h"
 #import "TripTypeModel.h"
 #import "CarOrderModel.h"
 #import "AppVersionModel.h"
-
+#import "HomeBackView.h"
+#import "EditUserController.h"
 #import "PopView.h"
 #import "TripTypeView.h"
+#import <AVFoundation/AVFoundation.h>
+#import "UserCenterController.h"
 
 #define kSetingViewHeight 215
+#define OPENCENTERX 250.0
+#define DIVIDWIDTH 70.0 //OPENCENTERX 对应确认是否打开或关闭的分界线。
 
-@interface HomeMapController() <TargetActionDelegate>
+@interface HomeMapController() <TargetActionDelegate,UIGestureRecognizerDelegate>
+{
+    CGPoint openPointCenter;
+    CGPoint closePointCenter;
+    
+    CGPoint leftOpenPointCenter;
+}
 @property (nonatomic,strong) TripTypeView *top_container;
 @property (nonatomic,strong) NSArray *carTypeArray;
 @property (nonatomic, strong) TripTypeModel *tripModel;
+@property(nonatomic,strong) AVAudioPlayer *movePlayer ;
+
+@property (nonatomic,strong) UIView *backView;
+@property (nonatomic,strong) HomeBackView *leftView;
+@property (nonatomic,strong) UIView *blackView;
 
 @end
 
@@ -57,12 +76,188 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self initBackView];
+
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(orderUnfinishedNotice:) name:NOTICE_ORDER_UNFIHISHED_STATE object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pushNoticeUpdateState:) name:NOTICE_ORDER_STATE_UPDATE object:nil];
     self.navigationController.interactivePopGestureRecognizer.enabled = NO;
     [self initData];
     [self initView];
+}
+-(void)initBackView{
+    
+    
+    //    self.headerView.hidden = YES;
+    
+    _backView = [[UIView alloc]initWithFrame:self.view.frame];
+    [_backView setBackgroundColor:[UIColor whiteColor]];
+    [self.view addSubview:_backView];
+    
+    _leftView = [[NSBundle mainBundle] loadNibNamed:@"HomeBackView" owner:self options:nil][0];
+    _leftView.delegate = self;
+    [_leftView setFrame:CGRectMake(-250, 0,250, kScreenSize.height)];
+    _leftView.backgroundColor = [UIColor whiteColor];
+    [_leftView.sureButton addTarget:self action:@selector(sureButton:) forControlEvents:UIControlEventTouchUpInside];
+
+    [self.view addSubview:_leftView];
+    
+    [self.headerView removeFromSuperview];
+    
+    [_backView addSubview:self.headerView];
+    [_backView addSubview:self.leftButton];
+    [_backView addSubview:self.rightButton];
+    [_backView addSubview:self.bottomHeaderLine];
+    [_backView addSubview:self.titleLabel];
+    [self.headerView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(_backView);
+        make.left.equalTo(_backView);
+        make.width.equalTo(_backView);
+        make.height.mas_equalTo(KTopbarH);
+    }];
+    [self.leftButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.headerView).offset(20);
+        make.left.equalTo(self.headerView).offset(10);
+        make.width.height.mas_equalTo(44);
+        make.bottom.equalTo(self.headerView).offset(0);
+    }];
+    [self.rightButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.headerView).offset(20);
+        make.right.equalTo(self.headerView).offset(-10);
+        make.width.height.mas_equalTo(44);
+    }];
+    [self.bottomHeaderLine mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.headerView);
+        make.bottom.equalTo(self.headerView);
+        make.height.mas_equalTo(1);
+        make.width.equalTo(self.headerView);
+    }];
+    [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.headerView).offset(20);
+        make.height.mas_equalTo(44);
+        make.centerX.equalTo(self.headerView);
+    }];
+    
+    //KVO监听
+    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc]
+                                                    initWithTarget:self
+                                                    action:@selector(handlePan:)];
+    panGestureRecognizer.delegate = self;
+    [self.backView addGestureRecognizer:panGestureRecognizer];
+    
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc]
+                                                    initWithTarget:self
+                                                    action:@selector(handleTap:)];
+    tapGestureRecognizer.delegate = self;
+    [self.backView addGestureRecognizer:tapGestureRecognizer];
+    openPointCenter = CGPointMake(self.backView.center.x + OPENCENTERX,
+                                  self.backView.center.y);
+    leftOpenPointCenter = CGPointMake(self.leftView.center.x + OPENCENTERX, self.leftView.center.y);
+}
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    //Tip:我们可以通过打印touch.view来看看具体点击的view是具体是什么名称,像点击UITableViewCell时响应的View则是UITableViewCellContentView.
+    //    NSLog(@"%@",[touch.view class]);
+    if ([NSStringFromClass([touch.view class])    isEqualToString:@"UITableViewCellContentView"]) {
+        //返回为NO则屏蔽手势事件
+        return NO;
+    }
+    return YES;
+}
+-(void) handlePan:(UIPanGestureRecognizer*) recognizer
+{
+    CGPoint translation = [recognizer translationInView:self.view];
+    float x = self.backView.center.x + translation.x;
+    float n = self.leftView.center.x + translation.x;
+    
+    if (x < self.view.center.x) {
+        x = self.view.center.x;
+    }
+    if (n < -250) {
+        n = -250;
+    }
+    
+    
+    NSLog(@"%f",_leftView.frame.origin.x);
+    NSLog(@"%f",_backView.frame.origin.x);
+    float alphaFloat = self.view.center.x/x;
+    
+    if (!_blackView) {
+        _blackView = [[UIView alloc]initWithFrame:_backView.frame];
+        _blackView.alpha = 0.0;
+        _blackView.backgroundColor = [UIColor blackColor];
+        [_backView addSubview:_blackView];
+    }
+    if (alphaFloat >= 0.5) {
+        _blackView.alpha = 1-alphaFloat;
+    }else{
+        _blackView.alpha = 0.5;
+    }
+    
+    self.backView.center = CGPointMake(x, openPointCenter.y);
+    self.leftView.center = CGPointMake(n, leftOpenPointCenter.y);
+    
+    
+    if(recognizer.state == UIGestureRecognizerStateEnded)
+    {
+        [UIView animateWithDuration:0.2
+                              delay:0.01
+                            options:UIViewAnimationOptionCurveEaseInOut
+                         animations:^(void)
+         {
+             if (x > openPointCenter.x -  DIVIDWIDTH) {
+                 _blackView.alpha = 0.5;
+                 self.backView.center = openPointCenter;
+                 self.leftView.center = leftOpenPointCenter;
+             }else{
+                 _blackView.alpha = 0.0;
+                 _blackView = nil;
+                 [_blackView removeFromSuperview];
+                 self.backView.center = CGPointMake(openPointCenter.x - OPENCENTERX,
+                                                    openPointCenter.y);
+                 self.leftView.center = CGPointMake(leftOpenPointCenter.x - OPENCENTERX,
+                                                    leftOpenPointCenter.y);
+                 if ([GlobalData sharedInstance].user.userInfo.attribute1 && [[GlobalData sharedInstance].user.userInfo.attribute1 length]>0) {
+                     _leftView.sureButton.hidden = YES;
+                     _leftView.refereesTextField.userInteractionEnabled = NO;
+                     _leftView.refereesTextField.text = [GlobalData sharedInstance].user.userInfo.attribute1;
+                 }else{
+                     _leftView.sureButton.hidden = NO;
+                     _leftView.refereesTextField.userInteractionEnabled = YES;
+                 }
+                 [_leftView.refereesTextField resignFirstResponder];
+
+             }
+             
+         }completion:^(BOOL isFinish){
+             
+         }];
+    }
+    
+    [recognizer setTranslation:CGPointZero inView:self.backView];
+}
+
+-(void) handleTap:(UITapGestureRecognizer*) recognizer
+{
+    [_leftView.refereesTextField resignFirstResponder];
+    [UIView animateWithDuration:0.2
+                          delay:0.01
+                        options:UIViewAnimationOptionTransitionCurlUp animations:^(void){
+                            _blackView.alpha = 0.0;
+                            _blackView = nil;
+                            [_blackView removeFromSuperview];
+                            self.backView.center = CGPointMake(openPointCenter.x - OPENCENTERX,
+                                                               openPointCenter.y);
+                            self.leftView.center = CGPointMake(leftOpenPointCenter.x - OPENCENTERX,
+                                                               leftOpenPointCenter.y);
+                            if ([GlobalData sharedInstance].user.userInfo.attribute1 && [[GlobalData sharedInstance].user.userInfo.attribute1 length]>0) {
+                                _leftView.sureButton.hidden = YES;
+                                _leftView.refereesTextField.userInteractionEnabled = NO;
+                                _leftView.refereesTextField.text = [GlobalData sharedInstance].user.userInfo.attribute1;
+                            }else{
+                                _leftView.sureButton.hidden = NO;
+                                _leftView.refereesTextField.userInteractionEnabled = YES;
+                            }
+                        }completion:nil];
 }
 
 - (void) initData
@@ -109,12 +304,12 @@
 
     _top_container =[[TripTypeView alloc] init];
     [_top_container setBackgroundColor:RGBHex(g_white)];
-    [self.view addSubview:_top_container];
+    [_backView addSubview:_top_container];
     [_top_container mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.headerView.mas_bottom);
-        make.left.equalTo(self.view);
+        make.left.equalTo(_backView);
         make.height.mas_equalTo(60);
-        make.width.equalTo(self.view);
+        make.width.equalTo(_backView);
     }];
     [_top_container setSelectColor:RGBHex(g_blue)];
     [_top_container setDataArray:_carTypeArray];
@@ -195,8 +390,30 @@
             RegisterController *login = [[RegisterController alloc] init];
             [self.navigationController pushViewController:login animated:YES];
         }else{
-            UserCenterController *center = [[UserCenterController alloc] init];
-            [self.navigationController pushViewController:center animated:YES];
+//            UserCenterController *center = [[UserCenterController alloc] init];
+//            [self.navigationController pushViewController:center animated:YES];
+            if ([GlobalData sharedInstance].user.userInfo.attribute1 && [[GlobalData sharedInstance].user.userInfo.attribute1 length]>0) {
+                _leftView.sureButton.hidden = YES;
+                _leftView.refereesTextField.userInteractionEnabled = NO;
+                _leftView.refereesTextField.text = [GlobalData sharedInstance].user.userInfo.attribute1;
+            }else{
+                _leftView.sureButton.hidden = NO;
+                _leftView.refereesTextField.userInteractionEnabled = YES;
+            }
+            if (!_blackView) {
+                _blackView = [[UIView alloc]initWithFrame:_backView.frame];
+                _blackView.alpha = 0.0;
+                _blackView.backgroundColor = [UIColor blackColor];
+                [_backView addSubview:_blackView];
+            }
+            [UIView animateWithDuration:0.2
+                                  delay:0.01
+                                options:UIViewAnimationOptionTransitionCurlUp animations:^(void){
+                                    _blackView.alpha = 0.5;
+                                    self.backView.center = openPointCenter;
+                                    self.leftView.center = leftOpenPointCenter;
+                                }completion:nil];
+
         }
     }else if(sender == self.rightButton)
     {
@@ -212,6 +429,14 @@
             return;
         }
         UIButton *but = (UIButton*)sender;
+
+        UserCenterController *center = [[UserCenterController alloc] init];
+        EditUserController *editor = [[EditUserController alloc] init];
+        OrderListController *order = [[OrderListController alloc] init];
+        WalletController *wallet =[[WalletController alloc] init];
+        setUpViewController *setUpVC =[[setUpViewController alloc] initWithNibName:@"setUpViewController" bundle:nil];
+        helpViewController *helpVC =[[helpViewController alloc] initWithNibName:@"helpViewController" bundle:nil];
+        
         switch (but.tag) {
             case 1:
             {
@@ -264,6 +489,25 @@
                 [self.navigationController pushViewController:special animated:YES];*/
             }
                 break;
+            case 10:
+                editor.delegateCallback = self;
+                [self.navigationController pushViewController:editor animated:YES];
+
+//                [self.navigationController pushViewController:center animated:YES];
+                break;
+            case 11:
+                [self.navigationController pushViewController:order animated:YES];
+
+                break;
+            case 12:
+                [self.navigationController pushViewController:wallet animated:YES];
+                break;
+            case 13:
+                [self.navigationController pushViewController:setUpVC animated:YES];
+                break;
+            case 14:
+                [self.navigationController pushViewController:helpVC animated:YES];
+                break;
             default:
                 break;
         }
@@ -283,12 +527,12 @@
             [currentController.view removeFromSuperview];
         }
         currentController = self.childViewControllers[index];
-        [self.view addSubview:currentController.view];
+        [_backView addSubview:currentController.view];
         [currentController.view mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(_top_container.mas_bottom);
-            make.left.equalTo(self.view);
-            make.right.equalTo(self.view);
-            make.bottom.equalTo(self.view);
+            make.left.equalTo(_backView);
+            make.right.equalTo(_backView);
+            make.bottom.equalTo(_backView);
         }];
         if (currentController && [currentController isKindOfClass:[BaseController class]])
         {
@@ -343,7 +587,7 @@
 {
     NSLog(@"pushNoticeUpdateState");
 //    CarOrderModel *order = [[CarOrderModel alloc] initWithDictionary:notice.userInfo error:nil];
-    
+
     CarOrderModel *order;
     if ([notice.userInfo[@"type"] integerValue]>4) {
         DriverOrderInfo *notices = [[DriverOrderInfo alloc] initWithDictionary:notice.userInfo error:nil];
@@ -361,7 +605,19 @@
         order = [[CarOrderModel alloc] initWithDictionary:notice.userInfo error:nil];
     }
     
+    if ([@"21" isEqualToString:order.type]) {
+        NSString *tmp2= [[NSBundle mainBundle] pathForResource:@"newMessage" ofType:@"m4r"];
+        NSURL *moveMP32=[NSURL fileURLWithPath:tmp2];
+        NSError *err=nil;
+        self.movePlayer=[[AVAudioPlayer alloc] initWithContentsOfURL:moveMP32 error:&err];
+        self.movePlayer.volume=1.0;
+        [self.movePlayer prepareToPlay];
+        [self.movePlayer play];
+    }
+    
     if (order) {
+      
+
         if ([@"1" isEqualToString:order.oType]) {
             [_top_container setIndexSelect:0];
             [self changeViewController:0];
@@ -394,6 +650,7 @@
                 [self showAlertMessage:@"暂无业务处理!"];
             }
         }
+        
         //[self jumpLogicController:order];
     }
     NSLog(@"pushNoticeUpdateState end:%@",notice.userInfo);
@@ -492,5 +749,28 @@
     } withFail:^(NSInteger errorCode, NSString *errorMessage) {
         NSLog(@"errorMessage:%@",errorMessage);
     }];
+}
+- (void)sureButton:(UIButton *)sender {
+    NSMutableDictionary *param =[NSMutableDictionary dictionary];
+    [param setObject:_leftView.refereesTextField.text forKey:@"introducer"];
+    [param setObject:[GlobalData sharedInstance].user.userInfo.ids forKey:@"id"];
+    [UserInfoModel commitEditUserInfo:param succ:^(NSDictionary *resultDictionary) {
+        NSLog(@"result:%@",resultDictionary);
+        NSDictionary *data = resultDictionary[@"data"];
+        UserInfoModel *user = [[UserInfoModel alloc] initWithDictionary:data error:nil];
+        [GlobalData sharedInstance].user.userInfo = user;
+        [[GlobalData sharedInstance].user save];
+        
+        
+        [MBProgressHUD showAndHideWithMessage:@"保存成功" forHUD:nil onCompletion:^{
+            _leftView.sureButton.hidden = YES;
+            _leftView.refereesTextField.userInteractionEnabled = YES;
+            _leftView.refereesTextField.text = [GlobalData sharedInstance].user.userInfo.attribute1;
+        }];
+        
+    } fail:^(NSInteger errorCode, NSString *errorMessage) {
+        [MBProgressHUD showAndHideWithMessage:errorMessage forHUD:nil];
+    }];
+    
 }
 @end

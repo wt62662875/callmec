@@ -39,6 +39,7 @@
 #import "CancelView.h"
 
 #import "PayModel.h"
+#import <AVFoundation/AVFoundation.h>
 
 #import <MAMapKit/MAPolyline.h>
 #define kSetingViewHeight 215
@@ -76,6 +77,8 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
 @property (nonatomic,strong) UIButton *buttonCall;
 @property (nonatomic,copy) NSString *dPhoneNo;//
 @property (nonatomic,strong) UIButton *cancelOrder;
+
+@property(nonatomic,strong) AVAudioPlayer *movePlayer ;
 
 @end
 
@@ -312,7 +315,11 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
     _extraMessage =[[ItemView alloc] init];
     [_extraMessage.leftImageView setImage:[UIImage imageNamed:@"beizhu"]];
     [_top_container addSubview:_extraMessage];
-    [_extraMessage.titleLabel setText:[NSString stringWithFormat:@"%@",_model.descriptions]];
+    if (_model.descriptions.length>0) {
+        [_extraMessage.titleLabel setText:[NSString stringWithFormat:@"%@",_model.descriptions]];
+    }else{
+        [_extraMessage.titleLabel setText:@"无"];
+    }
     [_extraMessage mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_peopleNumber.mas_bottom).offset(10);
         make.left.equalTo(_top_container).offset(10);
@@ -407,6 +414,27 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    NSDateFormatter *dateformater = [[NSDateFormatter alloc] init];
+    [dateformater setDateFormat:@"yyyy-MM-dd HH:mm"];
+    NSDate *dta = [[NSDate alloc] init];
+    dta = [dateformater dateFromString:_startTime];
+    
+    NSDate *datenow = [NSDate date];
+    NSInteger miniTime = [datenow timeIntervalSince1970] - [dta timeIntervalSince1970];
+
+    if ([USERDEFAULTS objectForKey:@"defaultNO"] &&[USERDEFAULTS objectForKey:@"defaultTIME"]) {
+            if ([_model.state isEqualToString:@"1"] && miniTime/60 >= 10) {
+                
+                [MBProgressHUD showAndHideWithMessage:@"订单信息已过时,请重新发布!" forHUD:nil];
+                [self.navigationController popViewControllerAnimated:YES];
+            }
+    }else{
+        [USERDEFAULTS setObject:_model.no forKey:@"defaultNO"];
+        [USERDEFAULTS setObject:_startTime forKey:@"defaultTIME"];
+    }
+
+
 }
 
 - (void) viewDidDisappear:(BOOL)animated
@@ -1002,6 +1030,13 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
     @catch (NSException *exception){}
     @finally{}
     if([@"-1" isEqualToString:order.state]){
+        NSString *tmp2= [[NSBundle mainBundle] pathForResource:@"driveCancelOrder" ofType:@"wav"];
+        NSURL *moveMP32=[NSURL fileURLWithPath:tmp2];
+        NSError *err=nil;
+        _movePlayer=[[AVAudioPlayer alloc] initWithContentsOfURL:moveMP32 error:&err];
+        _movePlayer.volume=1.0;
+        [_movePlayer prepareToPlay];
+        [_movePlayer play];
         [MBProgressHUD showAndHideWithMessage:@"司机已取消订单" forHUD:nil];
         [self.navigationController popToRootViewControllerAnimated:YES];
     }{
@@ -1106,7 +1141,13 @@ static BOOL WaitingCarPoolingCtrl_HASVISIABLE = NO;
     [_startItem.titleLabel setText:model.slocation];
     [_peopleNumber.titleLabel setText:model.orderPerson];
 //    [_feeTip.titleLabel setText:model.otherFee];
-    [_extraMessage.titleLabel setText:model.descriptions];
+
+
+    if (model.descriptions.length>0) {
+        [_extraMessage.titleLabel setText:model.descriptions];
+    }else{
+        [_extraMessage.titleLabel setText:@"无"];
+    }
     _dPhoneNo = _model.dPhoneNo;
     [self changeButtonCallStatue];
 }

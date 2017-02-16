@@ -639,6 +639,7 @@
 {
     [self.mapView removeAnnotations:_drivers];
     NSMutableArray * currDrivers = [NSMutableArray arrayWithCapacity:[drivers count]];
+    
     [drivers enumerateObjectsUsingBlock:^(DriverInfoModel * obj, NSUInteger idx, BOOL *stop) {
         DriverPointAnnotion * driver = [[DriverPointAnnotion alloc] init];
         CLLocationDegrees latitude = [obj.latitude floatValue];
@@ -647,7 +648,9 @@
         
         driver.coordinate = coordinate;
         driver.title = @"";//obj.realName?obj.realName:@"";
-        
+        if (drivers.count == 0) {
+            [MBProgressHUD showAndHideWithMessage:@"你的附近没有车辆!！" forHUD:nil];
+        }
         if (idx==0) {
             CLLocation *user_location = [[CLLocation alloc] initWithLatitude:_currentLocation.coordinate.latitude longitude:_currentLocation.coordinate.longitude];
             
@@ -673,6 +676,9 @@
                     NSLog(@"%@",times_str);
                     [popView setLeftTime:times_str];
                 }
+            }
+            if (drivers.count == 0) {
+                [popView setLeftTime:@""];
             }
             if(fabs(times-_old_time)<1000)
             {

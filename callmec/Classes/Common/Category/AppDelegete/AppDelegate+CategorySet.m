@@ -14,6 +14,7 @@
 #import "AppDelegate+CategorySet.h"
 #import "GeTuiSdk.h"
 #import "CarOrderModel.h"
+#import "UserInfoModel.h"
 
 //#import "UMSocial.h"
 //#import "MobClick.h"
@@ -287,6 +288,24 @@
 /** SDK启动成功返回cid */
 - (void)GeTuiSdkDidRegisterClient:(NSString *)clientId {
     // [4-EXT-1]: 个推SDK已注册，返回clientId
+    if (![[GlobalData sharedInstance].clientId isEqualToString:clientId]) {
+        [UserInfoModel login:[SandBoxHelper fetchLoginNumber] withPwd:[SandBoxHelper fetchLoginRandomCode] succ:^(NSDictionary *resultDictionary) {
+            NSLog(@"succes:%@",resultDictionary);
+            UserInfoModel *userInfo = [[UserInfoModel alloc] initWithDictionary:[resultDictionary objectForKey:@"data"] error:nil];
+            if (userInfo) {
+                NSString *token = [resultDictionary objectForKey:@"token"];
+                [GlobalData sharedInstance].user.session = token;
+                [GlobalData sharedInstance].user.isLogin = YES;
+                [GlobalData sharedInstance].user.userInfo = userInfo;
+                [[GlobalData sharedInstance].user save];
+            }else{
+                [MBProgressHUD showAndHideWithMessage:@"解析失败" forHUD:nil];
+            }
+            
+        } fail:^(NSInteger errorCode, NSString *errorMessage) {
+            [MBProgressHUD showAndHideWithMessage:errorMessage forHUD:nil];
+        }];
+    }
     [GlobalData sharedInstance].clientId = clientId;
     NSLog(@"\n>>>[GeTuiSdk RegisterClient]:%@\n\n", clientId);
     if ([GlobalData sharedInstance].user.isLogin) {
@@ -320,6 +339,7 @@
     
     NSDictionary *dic = [payloadMsg lk_objectFromJSONString];
     [[NSNotificationCenter defaultCenter] postNotificationName:NOTICE_ORDER_STATE_UPDATE object:nil userInfo:dic];
+    NSLog(@"%@",dic);
    /*
     NSString *msg = [NSString stringWithFormat:@"taskId=%@,messageId:%@,payloadMsg:%@%@", taskId, msgId, payloadMsg, offLine ? @"<离线消息>" : @""];
     NSLog(@"\n>>>[GexinSdk ReceivePayload]:%@\n\n", msg);

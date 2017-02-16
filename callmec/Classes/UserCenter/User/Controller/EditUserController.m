@@ -39,6 +39,7 @@
 {
     UserInfoModel *model = [GlobalData sharedInstance].user.userInfo;
     
+
     NSString *headerIcon = [NSString stringWithFormat:@"%@getMHeadIcon?id=%@&token=%@",kserviceURL,
                                           [GlobalData sharedInstance].user.userInfo.ids,
                                           [GlobalData sharedInstance].user.session];

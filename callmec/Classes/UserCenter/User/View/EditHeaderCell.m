@@ -70,8 +70,8 @@
 {
     [super setModel:model];
     BaseCellModel *md = (BaseCellModel*)model;
-    if (md.value && [md.value hasPrefix:@"http://"]) {
-        [_iconView sd_setCircleImageWithURL:md.value placeholderImage:[UIImage imageNamed:@"icon_user"]];
+    if (md.value && [md.value hasPrefix:@"https://"]) {
+        [_iconView sd_setCircleImageWithURL:md.value placeholderImage:[UIImage imageNamed:@"teng"]];
     }
 }
 - (void) setImageUrl:(NSString *)imageUrl
